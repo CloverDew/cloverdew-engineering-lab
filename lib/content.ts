@@ -3,6 +3,16 @@ export type LessonSection = {
   title: string;
   body: string[];
   bullets?: string[];
+  sequence?: {
+    title: string;
+    body: string;
+  }[];
+  comparison?: {
+    label: string;
+    title: string;
+    body: string;
+    bullets: string[];
+  }[];
   code?: string;
   codeLabel?: string;
   note?: string;
@@ -26,13 +36,48 @@ export const lessons: Lesson[] = [
     slug: "threads-and-shared-state",
     week: 1,
     title: "Threads, shared state, and the counter that lies",
-    dek: "Learn why count++ loses updates, what threads actually share, and how to reason from an invariant instead of a lucky run.",
-    readTime: "8 min",
+    dek: "Learn how processes and threads begin, why count++ loses updates, and how to reason from an invariant instead of a lucky run.",
+    readTime: "12 min",
     status: "published",
     tags: ["threads", "race conditions", "synchronized"],
     keyIdea:
       "A concurrent component is correct only when every possible interleaving preserves its invariant.",
     sections: [
+      {
+        eyebrow: "Runtime foundations",
+        title: "The operating system starts a process; a thread runs its code",
+        body: [
+          "A program is code stored on disk. A process is one running instance of that program, with an operating-system identity, a private virtual address space, and resources such as open files. Starting an application from a shell, IDE, service manager, or container runtime sends a launch request to the operating system.",
+          "For a Java application, the new process starts the JVM. The JVM creates an initial application thread and invokes your main method on it. That main thread can do the work itself, start more threads in the same process, or ask the operating system to create a separate child process."
+        ],
+        sequence: [
+          {
+            title: "Something requests a launch",
+            body: "A shell, IDE, service manager, or already-running program asks the operating system to run the application."
+          },
+          {
+            title: "The operating system creates a process",
+            body: "It assigns a process ID, an address space, security context, and handles for resources."
+          },
+          {
+            title: "The runtime creates the initial thread",
+            body: "The JVM initializes and starts the application’s main thread."
+          },
+          {
+            title: "Application code begins",
+            body: "The main thread enters main and may later start child processes or additional threads."
+          }
+        ],
+        codeLabel: "Starting a separate process from Java",
+        code: `Process child = new ProcessBuilder(
+        "java", "-jar", "worker.jar")
+    .inheritIO()
+    .start();
+
+int exitCode = child.waitFor();`,
+        note:
+          "A child process has its own heap and lifecycle. The parent and child exchange data only through an explicit channel such as pipes, sockets, files, or shared memory."
+      },
       {
         eyebrow: "The problem",
         title: "The final count is smaller than the work completed",
@@ -54,6 +99,46 @@ export const lessons: Lesson[] = [
 }`,
         note:
           "Do not fix this snippet yet. First expand value++ into its conceptual read, add, and write actions."
+      },
+      {
+        eyebrow: "Starting threads",
+        title: "Creating a Thread object does not start a thread",
+        body: [
+          "new Thread(task) creates an ordinary Java object that describes work. Calling start() asks the JVM to create and schedule a new execution path in the current process. The new thread then calls task.run(); the thread that called start() continues independently.",
+          "Calling run() yourself is only a normal method call on the current thread. No new stack or concurrent execution appears. In production code, executors usually manage thread creation and reuse, but the same boundary remains: submitting work may cause a pool to start a worker according to its policy."
+        ],
+        codeLabel: "One task, two very different calls",
+        code: `Thread worker = new Thread(
+    () -> counter.increment());
+
+worker.start(); // New thread runs the task.
+worker.join();  // Wait for that thread to finish.
+
+// worker.run(); would run on the current thread.`,
+        comparison: [
+          {
+            label: "Separate runtime boundary",
+            title: "Start a process when",
+            body: "The work needs isolation or an independently managed lifetime.",
+            bullets: [
+              "A user launches a new application instance.",
+              "A program starts a child with ProcessBuilder.start().",
+              "The work needs a separate heap, permissions, runtime, or failure boundary."
+            ]
+          },
+          {
+            label: "Shared runtime boundary",
+            title: "Start a thread when",
+            body: "Concurrent work belongs inside an existing process and may share its objects.",
+            bullets: [
+              "The process’s initial thread starts as part of application startup.",
+              "Code calls Thread.start(), or an executor starts or reuses a worker.",
+              "Tasks need low-cost coordination over in-process state."
+            ]
+          }
+        ],
+        note:
+          "Threads are not started for every method call or object. Start one only when work should make progress concurrently; use a process when the isolation boundary matters more than sharing memory."
       },
       {
         eyebrow: "Mental model",
@@ -93,6 +178,8 @@ export const lessons: Lesson[] = [
       }
     ],
     questions: [
+      "What happens between launching a Java program and entering main?",
+      "When is a separate process a better boundary than another thread?",
       "What data is shared, and what remains thread-local?",
       "Why does calling run() directly not start a new thread?",
       "What exact interleaving loses an update?",

@@ -1332,6 +1332,134 @@ a.lesson-card:hover {
   color: var(--blue);
 }
 
+.runtime-sequence {
+  counter-reset: runtime-step;
+  display: grid;
+  gap: 0;
+  list-style: none;
+  margin: 30px 0;
+  padding: 0;
+}
+
+.runtime-sequence li {
+  counter-increment: runtime-step;
+  display: grid;
+  gap: 17px;
+  grid-template-columns: 38px minmax(0, 1fr);
+  margin: 0;
+  padding: 0 0 24px;
+  position: relative;
+}
+
+.runtime-sequence li:last-child {
+  padding-bottom: 0;
+}
+
+.runtime-sequence li::before {
+  align-items: center;
+  background: color-mix(in srgb, var(--blue) 12%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--blue) 48%, var(--line));
+  border-radius: 50%;
+  color: var(--blue);
+  content: counter(runtime-step, decimal-leading-zero);
+  display: flex;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  font-weight: 800;
+  height: 36px;
+  justify-content: center;
+  position: relative;
+  width: 36px;
+  z-index: 1;
+}
+
+.runtime-sequence li:not(:last-child)::after {
+  background: var(--line);
+  content: "";
+  height: calc(100% - 28px);
+  left: 18px;
+  position: absolute;
+  top: 36px;
+  width: 1px;
+}
+
+.runtime-sequence strong {
+  color: var(--ink);
+  display: block;
+  font-size: 15px;
+  margin: 1px 0 5px;
+}
+
+.runtime-sequence p {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.runtime-comparison {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 30px 0;
+}
+
+.runtime-comparison article {
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+}
+
+.runtime-comparison article:first-child {
+  border-top: 3px solid var(--orange);
+}
+
+.runtime-comparison article:last-child {
+  border-top: 3px solid var(--blue);
+}
+
+.runtime-comparison article > span {
+  color: var(--ink-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.runtime-comparison h3 {
+  color: var(--ink);
+  font-size: 21px;
+  letter-spacing: -0.03em;
+  margin: 9px 0 8px;
+}
+
+.runtime-comparison article > p,
+.runtime-comparison li {
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.runtime-comparison article > p {
+  margin: 0;
+}
+
+.runtime-comparison ul {
+  margin: 16px 0 0;
+  padding-left: 18px;
+}
+
+.runtime-comparison li {
+  margin: 7px 0;
+  padding-left: 2px;
+}
+
+.runtime-comparison li::marker {
+  color: var(--blue);
+}
+
 .code-block {
   background: var(--code);
   border: 1px solid color-mix(in srgb, var(--code-ink) 14%, transparent);
@@ -1391,6 +1519,12 @@ a.lesson-card:hover {
   color: var(--ink);
   font-size: 14px;
   margin: 7px 0 0;
+}
+
+@media (max-width: 620px) {
+  .runtime-comparison {
+    grid-template-columns: 1fr;
+  }
 }
 
 .explain-back {

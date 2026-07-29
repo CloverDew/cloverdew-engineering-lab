@@ -95,6 +95,18 @@ export default async function LessonPage({ params }: LessonPageProps) {
                   ))}
                 </ul>
               )}
+              {section.sequence && (
+                <ol aria-label="Startup sequence" className="runtime-sequence">
+                  {section.sequence.map((step) => (
+                    <li key={step.title}>
+                      <div>
+                        <strong>{step.title}</strong>
+                        <p>{step.body}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              )}
               {section.code && (
                 <div className="code-block">
                   <div className="code-header">
@@ -104,6 +116,22 @@ export default async function LessonPage({ params }: LessonPageProps) {
                   <pre>
                     <code>{section.code}</code>
                   </pre>
+                </div>
+              )}
+              {section.comparison && (
+                <div className="runtime-comparison">
+                  {section.comparison.map((item) => (
+                    <article key={item.title}>
+                      <span>{item.label}</span>
+                      <h3>{item.title}</h3>
+                      <p>{item.body}</p>
+                      <ul>
+                        {item.bullets.map((bullet) => (
+                          <li key={bullet}>{bullet}</li>
+                        ))}
+                      </ul>
+                    </article>
+                  ))}
                 </div>
               )}
               {section.note && (
