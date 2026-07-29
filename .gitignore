@@ -1,0 +1,8 @@
+node_modules/
+.next/
+.open-next/
+.wrangler/
+*.log
+*.tsbuildinfo
+.DS_Store
+site-build.tar.gz
