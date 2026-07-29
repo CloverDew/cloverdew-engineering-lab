@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s · Cloverdew Engineering Lab"
   },
   description:
-    "Concise, project-driven notes on Java concurrency, query systems, streaming infrastructure, and trustworthy data for AI."
+    "Detailed, project-driven lessons on Java concurrency, query systems, streaming infrastructure, and trustworthy data for AI."
 };
 
 export default function RootLayout({

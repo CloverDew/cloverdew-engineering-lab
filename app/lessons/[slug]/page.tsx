@@ -145,13 +145,67 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
           <section className="explain-back" id="explain-back">
             <p className="eyebrow">Retrieval check</p>
-            <h2>Explain it back without notes.</h2>
-            <ol>
+            <h2>Answer first. Then inspect the reasoning.</h2>
+            <p className="explain-back-intro">
+              Each answer is hidden by default. Say or write your answer before
+              expanding the card, then compare the mechanism, API choices, and
+              distributed-system consequence.
+            </p>
+            <ol className="question-list">
               {lesson.questions.map((question) => (
-                <li key={question}>{question}</li>
+                <li key={question.prompt}>
+                  <details className="question-card">
+                    <summary>
+                      <span>{question.prompt}</span>
+                      <small aria-hidden="true" />
+                    </summary>
+                    <div className="question-answer">
+                      <p className="answer-label">Detailed answer</p>
+                      {question.answer.map((paragraph) => (
+                        <p key={paragraph}>{paragraph}</p>
+                      ))}
+                      {question.bullets && (
+                        <ul>
+                          {question.bullets.map((bullet) => (
+                            <li key={bullet}>{bullet}</li>
+                          ))}
+                        </ul>
+                      )}
+                      {question.code && (
+                        <div className="code-block answer-code">
+                          <div className="code-header">
+                            <span>{question.codeLabel ?? "Java"}</span>
+                            <CopyCode code={question.code} />
+                          </div>
+                          <pre>
+                            <code>{question.code}</code>
+                          </pre>
+                        </div>
+                      )}
+                      {question.alternatives && (
+                        <div className="api-options">
+                          <p className="answer-label">Choose by contract</p>
+                          {question.alternatives.map((alternative) => (
+                            <article key={alternative.api}>
+                              <h3>{alternative.api}</h3>
+                              <p>{alternative.fit}</p>
+                              <small>{alternative.tradeoff}</small>
+                            </article>
+                          ))}
+                        </div>
+                      )}
+                      {question.distributed && (
+                        <aside className="distributed-note">
+                          <strong>Across process or machine boundaries</strong>
+                          <p>{question.distributed}</p>
+                        </aside>
+                      )}
+                    </div>
+                  </details>
+                </li>
               ))}
             </ol>
-            <details>
+            <details className="ai-help">
               <summary>When may I ask AI for help?</summary>
               <p>
                 First write your invariant, shared state, failure behavior, and

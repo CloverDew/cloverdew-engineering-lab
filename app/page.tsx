@@ -21,7 +21,7 @@ export default function HomePage() {
               <em>Own the system.</em>
             </h1>
             <p className="hero-dek">
-              Concise, experiment-first notes for building Java concurrency
+              Detailed, experiment-first lessons for building Java concurrency
               foundations and carrying them into query engines, streaming
               systems, and trustworthy data infrastructure for AI.
             </p>
@@ -105,8 +105,9 @@ export default function HomePage() {
               <h2>Start with the failure, not the API.</h2>
             </div>
             <p>
-              Each lesson is short enough for one sitting and ends with a
-              concrete experiment, review questions, and a production bridge.
+              Each lesson combines a concrete experiment with expandable
+              answers, Java API trade-offs, failure examples, and a production
+              bridge into distributed systems.
             </p>
           </div>
           <Link className="featured-lesson" href={`/lessons/${current.slug}`}>

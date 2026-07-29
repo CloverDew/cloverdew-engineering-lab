@@ -1535,45 +1535,228 @@ a.lesson-card:hover {
   padding: 32px !important;
 }
 
-.explain-back ol {
+.explain-back-intro {
+  margin: -8px 0 28px;
+}
+
+.explain-back .question-list {
   counter-reset: questions;
   list-style: none;
+  margin: 0;
   padding: 0;
 }
 
-.explain-back li {
+.explain-back .question-list > li {
   border-top: 1px solid var(--line);
   counter-increment: questions;
   display: grid;
   gap: 12px;
   grid-template-columns: 28px 1fr;
-  padding: 13px 0;
+  padding: 0;
 }
 
-.explain-back li::before {
+.explain-back .question-list > li::before {
   color: var(--blue);
   content: counter(questions, decimal-leading-zero);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 10px;
   font-weight: 800;
+  padding-top: 21px;
 }
 
-.explain-back details {
+.question-card {
+  min-width: 0;
+}
+
+.question-card summary {
+  align-items: center;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  list-style: none;
+  padding: 17px 0;
+}
+
+.question-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.question-card summary span {
+  font-size: 15px;
+  font-weight: 720;
+  line-height: 1.55;
+}
+
+.question-card summary small {
+  color: var(--blue);
+  flex: 0 0 auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.question-card summary small::before {
+  content: "+ Reveal answer";
+}
+
+.question-card[open] summary small::before {
+  content: "− Hide answer";
+}
+
+.question-card[open] summary {
+  color: var(--blue);
+}
+
+.question-answer {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin: 0 0 22px;
+  padding: 22px;
+}
+
+.question-answer > p:not(.answer-label),
+.question-answer > ul li {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.question-answer > p:not(.answer-label) {
+  margin: 0 0 13px;
+}
+
+.question-answer > ul {
+  margin: 8px 0 18px;
+  padding-left: 20px;
+}
+
+.question-answer > ul li {
+  display: list-item;
+  margin: 6px 0;
+  padding: 0;
+}
+
+.question-answer > ul li::before {
+  content: none;
+}
+
+.answer-label {
+  color: var(--blue);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin: 0 0 9px;
+  text-transform: uppercase;
+}
+
+.answer-code {
+  margin: 20px 0;
+}
+
+.api-options {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 22px;
+  padding-top: 20px;
+}
+
+.api-options > .answer-label {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.api-options article {
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.api-options h3 {
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px !important;
+  letter-spacing: 0;
+  margin: 0 0 6px !important;
+}
+
+.api-options article p,
+.api-options article small {
+  color: var(--ink-soft);
+  display: block;
+  font-size: 12px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.api-options article small {
+  border-top: 1px solid var(--line);
+  margin-top: 9px;
+  padding-top: 9px;
+}
+
+.distributed-note {
+  background: color-mix(in srgb, var(--orange) 8%, var(--paper-deep));
+  border-left: 3px solid var(--orange);
+  margin-top: 20px;
+  padding: 15px 17px;
+}
+
+.distributed-note strong {
+  color: var(--orange);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.distributed-note p {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 6px 0 0;
+}
+
+.explain-back .ai-help {
   border-top: 1px solid var(--line);
   margin-top: 20px;
   padding-top: 18px;
 }
 
-.explain-back summary {
+.explain-back .ai-help summary {
   color: var(--blue);
   cursor: pointer;
   font-size: 13px;
   font-weight: 750;
 }
 
-.explain-back details p {
+.explain-back .ai-help p {
   color: var(--ink-soft);
   font-size: 13px;
+}
+
+@media (max-width: 620px) {
+  .api-options {
+    grid-template-columns: 1fr;
+  }
+
+  .question-card summary {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .question-answer {
+    padding: 17px;
+  }
 }
 
 .article-completion {
