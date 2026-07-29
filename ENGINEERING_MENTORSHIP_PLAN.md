@@ -1,221 +1,223 @@
-# Six-Month Engineering Mentorship Plan
+# 六个月工程导师计划
 
-**Direction:** Java concurrency → reliable execution systems → query, streaming, and data-for-AI infrastructure  
-**Time budget:** 2 focused hours per week, 24 active weeks, approximately 48 hours total  
-**Primary artifact:** `QueryGate`, a production-oriented, multi-tenant concurrent task-execution service  
-**Rule of pace:** An interrupted week moves the schedule; it does not create catch-up debt.
-
----
-
-## 1. Diagnosis of Your Current Engineering Profile
-
-You are not a beginner engineer, but your skill shape is uneven.
-
-Your production intuition is ahead of your formal foundations and coding fluency. You can often recognize a suspicious design, interpret logs, narrow a failure category, and discuss system trade-offs. Those are valuable systems-engineering abilities that many people acquire only after years of work. Your experience with Flink, Spark, CDC, SQL, warehouses, incidents, and open source gives you real context for why concurrency and reliability matter.
-
-The weak point is the path from an idea to independently justified code:
-
-> problem → invariant → design → implementation → adversarial test → diagnosis → explanation
-
-You can traverse parts of this path well, especially problem understanding and diagnosis, but AI frequently fills too much of the implementation section. That makes your knowledge feel uncertain because you do not yet have enough repeated evidence that you can construct the mechanism yourself.
-
-Your current job creates a second risk. Alert handling and cross-team support can produce broad operational familiarity without clear ownership, durable artifacts, or a complete engineering feedback loop. This plan cannot change your assigned work, but it can give you a subsystem-sized loop that you own from design through load testing and postmortem.
-
-The right strategy is not a broad “complete computer science” curriculum. It is to build a narrow, high-value spine:
-
-1. Make Java concurrency precise and executable.
-2. Use it to build a reliable multi-tenant execution subsystem.
-3. Add only the OS, JVM, networking, query, and streaming concepts needed to explain that subsystem.
-4. connect the result to deterministic data infrastructure for AI.
-5. repair interview implementation fluency with one small algorithm problem per week.
-
-Your target profile after six months is not “expert in everything.” It is:
-
-> An engineer who can independently design, implement, test, debug, measure, and explain a bounded concurrent execution service, and connect its design to query engines, streaming platforms, and reliable context delivery for AI.
+**方向：**Java 并发 → 可靠执行系统 → 查询、流式处理与面向 AI 的数据基础设施
+**时间预算：**每周 2 小时专注学习，24 个有效周，合计约 48 小时
+**核心产物：**`QueryGate`，一个面向生产、多租户的并发任务执行服务
+**节奏原则：**某一周被打断时，整体计划顺延；不产生补课债务。
 
 ---
 
-## 2. Gaps to Fix, in Priority Order
+## 1. 当前工程能力画像诊断
 
-### Priority 1: Independent Java implementation and concurrency correctness
+你不是初学工程师，但能力结构并不均衡。
 
-You need repeated practice translating invariants into Java without receiving an implementation first. This includes the Java Memory Model, safe publication, synchronization, state transitions, cancellation, shutdown, and bounded resource use.
+你的生产直觉领先于形式化基础和编码流畅度。你常能识别可疑设计、解读日志、缩小故障类别，并讨论系统取舍。这些是许多人工作多年才获得的系统工程能力。你在 Flink、Spark、CDC、SQL、数仓、线上事故和开源方面的经验，提供了理解并发与可靠性价值的真实语境。
 
-Why first: these skills improve your current engineering work, open-source work, interviews, and confidence simultaneously.
+薄弱点在于：从想法到能够独立论证的代码之间的路径：
 
-### Priority 2: A rigorous correctness habit
+> 问题 → 不变量 → 设计 → 实现 → 对抗性测试 → 诊断 → 解释
 
-For every component, learn to name:
+你能较好地走完其中的一些环节，尤其是问题理解和诊断；但 AI 经常替你完成了过多实现工作。因此你对知识的把握会感到不确定——你尚未积累足够多“自己能够构建该机制”的重复证据。
 
-- shared mutable state;
-- legal state transitions;
-- invariants;
-- synchronization boundaries;
-- happens-before edges;
-- safety failures;
-- liveness failures;
-- overload behavior;
-- failure propagation;
-- shutdown behavior.
+当前工作带来了第二个风险。告警处理和跨团队支持可能带来广泛的运维熟悉度，却缺少清晰的所有权、可沉淀的产物以及完整的工程反馈闭环。本计划无法改变你的工作分配，但能给你一个从设计、压测到复盘都由你负责的子系统级闭环。
 
-Code that passes once is not evidence of concurrent correctness.
+正确策略不是广泛地完成一套“完整计算机科学”课程，而是构建一条狭窄但高价值的主线：
 
-### Priority 3: Ownership of one complete engineering loop
+1. 让 Java 并发知识精确且可执行。
+2. 用它构建可靠的多租户执行子系统。
+3. 只补充解释该子系统所需的 OS、JVM、网络、查询与流式概念。
+4. 将成果连接到面向 AI 的确定性数据基础设施。
+5. 每周一道小型算法题，恢复面试中的实现流畅度。
 
-You need one coherent project with design notes, code, tests, fault injection, metrics, benchmarks, and a final technical defense. This creates measurable evidence even if daily work remains fragmented.
+六个月后的目标画像不是“样样精通”，而是：
 
-### Priority 4: Runtime foundations that explain production behavior
-
-Learn a selective subset of operating systems, JVM internals, and networking: scheduling, blocking, memory, allocation, garbage collection, sockets, timeouts, queues, and observability. Do not attempt full courses.
-
-### Priority 5: Query and streaming execution concepts
-
-Connect thread pools, scheduling, queues, fairness, backpressure, retries, and state machines to inter-query concurrency, pipeline execution, CDC ingestion, checkpoints, and tenant isolation.
-
-### Priority 6: Interview implementation fluency
-
-One problem every week is enough at this stage if it is solved independently, tested, and explained. The goal is retrieval of patterns under pressure, not a large problem count.
-
-### Priority 7: Data-for-AI specialization
-
-Only after the execution foundation is stable, add metadata, permission checks, freshness, provenance, and deterministic context-building boundaries. Avoid chasing framework trends.
+> 能够独立设计、实现、测试、调试、度量并解释一个有明确边界的并发执行服务，并能将其设计关联到查询引擎、流平台以及为 AI 可靠交付上下文的工程师。
 
 ---
 
-## 3. Six-Month Roadmap
+## 2. 待补齐的能力缺口（按优先级）
 
-The roadmap has three phases. Each fourth week is partly an integration checkpoint. A “week” means one completed two-hour session, not necessarily one calendar week.
+### 优先级 1：独立 Java 实现能力与并发正确性
 
-| Phase | Weeks | Central question | Project result |
+你需要反复练习：在未先获得实现方案的前提下，把不变量翻译成 Java。这包括 Java 内存模型、安全发布、同步、状态迁移、取消、关闭与有界资源使用。
+
+**为什么优先：**这些能力会同时提升你当前工程工作、开源工作、面试表现和自信心。
+
+### 优先级 2：严谨的正确性习惯
+
+对每个组件，学习明确命名：
+
+- 共享可变状态；
+- 合法状态迁移；
+- 不变量；
+- 同步边界；
+- happens-before 边；
+- 安全性故障；
+- 活性故障；
+- 过载行为；
+- 故障传播；
+- 关闭行为。
+
+代码运行成功一次，并不是并发正确性的证据。
+
+### 优先级 3：拥有一个完整工程闭环
+
+你需要一个连贯的项目，包含设计说明、代码、测试、故障注入、指标、基准测试与最终技术答辩。即使日常工作仍较碎片化，这也会产生可衡量的证据。
+
+### 优先级 4：解释生产行为的运行时基础
+
+选择性学习操作系统、JVM 内部与网络：调度、阻塞、内存、分配、GC、套接字、超时、队列和可观测性。不要试图完成整套课程。
+
+### 优先级 5：查询和流式执行概念
+
+把线程池、调度、队列、公平性、背压、重试和状态机联系到查询间并发、流水线执行、CDC 摄入、检查点与租户隔离。
+
+### 优先级 6：面试实现流畅度
+
+现阶段每周一道题足够，前提是独立完成、测试并解释。目标是在压力下提取模式，而非大量刷题。
+
+### 优先级 7：面向 AI 的数据专业化
+
+仅在执行基础稳定之后，加入元数据、权限校验、新鲜度、溯源和确定性上下文构建边界。避免追逐框架潮流。
+
+---
+
+## 3. 六个月路线图
+
+路线图分为三阶段。每第四周兼作集成检查点。“一周”指完成一次两小时会话，不必等同于自然周。
+
+| 阶段 | 周次 | 核心问题 | 项目结果 |
 |---|---:|---|---|
-| I. Concurrent execution foundations | 1–8 | Can I prove that concurrent Java code is safe, live, bounded, and stoppable? | A bounded executor with task states, tenant limits, cancellation, overload behavior, and stress tests |
-| II. Runtime and data-system execution | 9–16 | Can I explain and measure how the executor interacts with the JVM, OS, remote calls, query pipelines, and CDC backpressure? | Observable simulated query/CDC workloads, fair scheduling, JFR/JMH evidence, retry/deduplication rules |
-| III. Reliable data-for-AI capstone | 17–24 | Can I turn the executor into a trustworthy deterministic context service and defend its design? | Permission-aware context jobs, freshness/provenance, fault injection, capacity report, design document, and release |
+| I. 并发执行基础 | 1–8 | 我能证明 Java 并发代码安全、有活性、有界且可停止吗？ | 具备任务状态、租户限额、取消、过载行为和压力测试的有界执行器 |
+| II. 运行时与数据系统执行 | 9–16 | 我能解释并度量执行器如何与 JVM、OS、远程调用、查询流水线和 CDC 背压交互吗？ | 可观测的模拟查询/CDC 工作负载、公平调度、JFR/JMH 证据、重试/去重规则 |
+| III. 可靠的面向 AI 数据毕业项目 | 17–24 | 我能把执行器变为可信的确定性上下文服务，并为其设计答辩吗？ | 权限感知的上下文任务、新鲜度/溯源、故障注入、容量报告、设计文档与发布版本 |
 
-### Month 1 — Shared state and coordination
+### 第 1 月——共享状态与协作
 
-Build a correct mental model of threads, races, visibility, ordering, atomicity, monitors, and wait conditions. Produce the first task state machine and bounded queue.
+建立对线程、竞态、可见性、有序性、原子性、监视器和等待条件的正确心智模型。产出第一个任务状态机和有界队列。
 
-### Month 2 — Execution lifecycle
+### 第 2 月——执行生命周期
 
-Build the worker pool, bounded admission, tenant limits, cancellation, exception propagation, graceful shutdown, liveness diagnosis, and the first load report.
+构建工作线程池、有界准入、租户限额、取消、异常传播、优雅关闭、活性诊断和第一份负载报告。
 
-### Month 3 — Runtime evidence
+### 第 3 月——运行时证据
 
-Connect Java behavior to processes, scheduling, JVM memory, garbage collection, remote I/O, contention, false sharing, thread dumps, Java Flight Recorder, and careful benchmarking.
+把 Java 行为联系到进程、调度、JVM 内存、垃圾回收、远程 I/O、竞争、伪共享、线程转储、Java Flight Recorder 与严谨基准测试。
 
-### Month 4 — Query and streaming behavior
+### 第 4 月——查询与流式行为
 
-Model query pipelines, inter-query scheduling, fairness, CDC producers, backpressure, retry safety, idempotency, and duplicate suppression.
+建模查询流水线、查询间调度、公平性、CDC 生产者、背压、重试安全性、幂等性和重复抑制。
 
-### Month 5 — Data-for-AI reliability
+### 第 5 月——面向 AI 数据可靠性
 
-Add deterministic planning, permission checks, metadata, freshness, provenance, observability, SLOs, and a fault-injection matrix.
+加入确定性规划、权限检查、元数据、新鲜度、溯源、可观测性、SLO 和故障注入矩阵。
 
-### Month 6 — Engineering proof
+### 第 6 月——工程证明
 
-Audit correctness, simplify the design, measure capacity, document decisions, reproduce failures, and defend the system without relying on AI-generated explanations.
+审计正确性，简化设计，度量容量，记录决策，复现故障，并在不依赖 AI 生成解释的情况下答辩系统。
 
 ---
 
-## 4. The Weekly Two-Hour Operating System
+## 4. 每周两小时操作系统
 
-Use the same structure every week:
+每周采用相同结构：
 
-| Time | Activity |
+| 时间 | 活动 |
 |---:|---|
-| 0:00–0:10 | Closed-book recall: write what you remember from last week |
-| 0:10–0:25 | Predict the week’s engineering problem and failure modes before reading |
-| 0:25–1:25 | Implement or debug independently |
-| 1:25–1:45 | One algorithm problem or scheduled redo |
-| 1:45–2:00 | Run acceptance checks and write the learning log |
+| 0:00–0:10 | 闭卷回忆：写下你记得的上周内容 |
+| 0:10–0:25 | 阅读前先预测本周工程问题与故障模式 |
+| 0:25–1:25 | 独立实现或调试 |
+| 1:25–1:45 | 一道算法题或计划中的重做题 |
+| 1:45–2:00 | 运行验收检查并写学习日志 |
 
-Reading is demand-driven and is included in the implementation hour. Do not add a separate reading syllabus.
+阅读应由实现需求驱动，包含在实现的一小时内；不要另加独立阅读大纲。
 
-### Minimum viable session for a low-energy week
+### 精力不足周的最小可行会话
 
-If you cannot complete two hours, do 45 minutes:
+无法完成两小时时，做 45 分钟：
 
-1. ten minutes of recall and design;
-2. twenty-five minutes on one narrow code or test change;
-3. ten minutes recording the next exact action.
+1. 10 分钟回忆和设计；
+2. 25 分钟完成一个狭窄的代码或测试修改；
+3. 10 分钟记录下一步的精确行动。
 
-This preserves continuity. Do not compensate by doubling the next week.
+这能保持连续性。不要靠下周翻倍补偿。
 
-### Required weekly artifacts
+### 每周必需产物
 
-Each week leaves four small pieces of evidence:
+每周留下四项小证据：
 
-1. a design note containing the invariant and failure model;
-2. a code change you can explain line by line;
-3. at least one adversarial test;
-4. a learning-log entry answering “what evidence changed my mind?”
+1. 包含不变量和故障模型的设计说明；
+2. 你能逐行解释的代码改动；
+3. 至少一个对抗性测试；
+4. 一条回答“什么证据改变了我的想法？”的学习日志。
 
 ---
 
-## 5. Cumulative Project: `QueryGate`
+## 5. 累积项目：`QueryGate`
 
-`QueryGate` is an in-process Java service that accepts simulated query, CDC, and context-building tasks. It is intentionally not a full database, network server, or Flink clone.
+`QueryGate` 是一个进程内 Java 服务，接收模拟查询、CDC 与上下文构建任务。它刻意不是完整数据库、网络服务器或 Flink 克隆。
 
-### Conceptual architecture
+### 概念架构
 
-```text
-Submitter / workload simulator
-            |
-            v
-     AdmissionController
-       |           |
- queue capacity   per-tenant permits
-       |           |
-       +-----+-----+
-             v
-       FairTaskScheduler
-             |
-             v
-        WorkerExecutor
-             |
-      +------+-------+
-      |              |
-  TaskRunner      TaskRegistry
-      |              |
- timeout/retry    state machine
- cancellation     terminal result
-      |
-      v
- Simulated query / CDC / context stages
-
-Cross-cutting: metrics, trace IDs, fault injection, graceful shutdown
+```mermaid
+flowchart TD
+    S[提交方 / 工作负载模拟器] --> A[AdmissionController<br/>准入控制器]
+    A --> Q[队列容量]
+    A --> P[每租户许可]
+    Q --> F[FairTaskScheduler<br/>公平任务调度器]
+    P --> F
+    F --> W[WorkerExecutor<br/>工作线程执行器]
+    W --> R[TaskRunner<br/>任务运行器]
+    W --> G[TaskRegistry<br/>任务注册表]
+    R --> T[超时 / 重试 / 取消]
+    G --> M[状态机 / 终态结果]
+    T --> X[模拟查询 / CDC / 上下文阶段]
+    C[横切能力：指标、Trace ID、故障注入、优雅关闭] -.-> A
+    C -.-> F
+    C -.-> W
+    C -.-> R
+    C -.-> G
 ```
 
-### Core task state machine
+### 核心任务状态机
 
-Start with:
+起始版本：
 
-```text
-SUBMITTED -> QUEUED -> RUNNING -> SUCCEEDED
-                         |  |-> FAILED
-                         |  `-> CANCELLED
-                         `----> TIMED_OUT
-
-SUBMITTED or QUEUED may also become REJECTED or CANCELLED.
-Terminal states never transition.
+```mermaid
+stateDiagram-v2
+    [*] --> SUBMITTED
+    SUBMITTED --> QUEUED
+    SUBMITTED --> REJECTED
+    SUBMITTED --> CANCELLED
+    QUEUED --> RUNNING
+    QUEUED --> REJECTED
+    QUEUED --> CANCELLED
+    RUNNING --> SUCCEEDED
+    RUNNING --> FAILED
+    RUNNING --> CANCELLED
+    RUNNING --> TIMED_OUT
+    SUCCEEDED --> [*]
+    FAILED --> [*]
+    CANCELLED --> [*]
+    TIMED_OUT --> [*]
+    REJECTED --> [*]
 ```
 
-You may revise this state machine, but every transition must have one owner and a test.
+你可以修订该状态机，但每个迁移都必须有唯一所有者和测试。终态永不再迁移。
 
-### Initial invariants
+### 初始不变量
 
-1. Accepted tasks are either terminal or still discoverable in the registry.
-2. A task reaches at most one terminal state.
-3. Queue size never exceeds its configured capacity.
-4. Running tasks for a tenant never exceed that tenant’s limit.
-5. Rejected tasks never execute.
-6. A caller can distinguish overload, execution failure, cancellation, and timeout.
-7. Shutdown rejects new work, handles queued work according to a documented policy, interrupts running work when required, and terminates within a bound.
-8. Retry is allowed only when the task’s safety policy permits it.
-9. Metrics do not silently change the correctness of task execution.
+1. 已接纳的任务要么已终态，要么仍可在注册表中发现。
+2. 一个任务至多到达一个终态。
+3. 队列大小永不超过配置容量。
+4. 任一租户的运行任务不超过该租户限额。
+5. 被拒绝的任务绝不执行。
+6. 调用方能区分过载、执行失败、取消和超时。
+7. 关闭时拒绝新任务，按文档化策略处理排队任务，必要时中断运行任务，并在上限时间内终止。
+8. 仅当任务的安全策略允许时，才可重试。
+9. 指标不会悄然改变任务执行正确性。
 
-### Suggested repository shape
+### 建议仓库结构
 
 ```text
 query-gate/
@@ -228,1207 +230,701 @@ query-gate/
     benchmark-report.md
     decisions/
   src/main/java/.../
-    task/
-    queue/
-    admission/
-    execution/
-    scheduling/
-    metrics/
-    workload/
+    task/ queue/ admission/ execution/ scheduling/ metrics/ workload/
   src/test/java/.../
-    unit/
-    stress/
-    fault/
+    unit/ stress/ fault/
 ```
 
-Use Java 21, Maven, and JUnit 5. Add JMH or jcstress only when the plan reaches them; do not spend Week 1 building infrastructure.
+使用 Java 21、Maven 和 JUnit 5。仅在计划推进到相应阶段时加入 JMH 或 jcstress；不要在第 1 周搭建基础设施。
 
 ---
 
-## 6. Detailed First Eight Weeks: Java Multithreading and High Concurrency
+## 6. 前八周详解：Java 多线程与高并发
 
-The mentor protocol for every core exercise is:
+每项核心练习遵循导师协议：
 
-1. I give you the problem and constraints, not the implementation.
-2. You submit a design with shared state, invariants, transitions, and shutdown behavior.
-3. You write the first version.
-4. I review correctness before style.
-5. We add adversarial tests.
-6. You explain the happens-before argument and production connection.
-7. Only after acceptance may you compare with a reference implementation.
+1. 我提供问题和约束，而非实现。
+2. 你提交共享状态、不变量、迁移和关闭行为的设计。
+3. 你写出第一个版本。
+4. 我先审查正确性，后审查风格。
+5. 我们加入对抗性测试。
+6. 你解释 happens-before 论证和生产关联。
+7. 只有验收后才能与参考实现对照。
 
-Keep each week to one primary mechanism and roughly 50–120 lines of production code, excluding tests. If the acceptance criteria do not fit in the session, stop at a compiling, tested boundary and repeat that active week next session; do not rush ahead or silently borrow an implementation.
+每周只处理一个主要机制，生产代码约 50–120 行（不含测试）。若验收标准无法在会话内完成，就停在能编译、已测试的边界，下次重复该有效周；不要仓促前进或暗中借用实现。
 
-### Week 1 — A completion counter that lies
+### 第 1 周——会说谎的完成计数器
 
-**Engineering problem:** Several worker threads execute simulated query fragments and increment a shared completion count. The final count is occasionally smaller than the number of completed fragments.
+**工程问题：**多个工作线程执行模拟查询片段并递增共享完成计数。最终计数偶尔小于已完成片段数。
 
-**Concepts**
+**概念：**进程与线程、线程私有栈与共享堆、线程创建及 `start`/`run`/`join`/生命周期、调度不确定性、共享可变状态、读改写竞态、原子性、为何 `count++` 不可分割、安全性与活性。
 
-- process versus thread;
-- per-thread stack versus shared heap;
-- thread creation, `start`, `run`, `join`, and lifecycle states;
-- scheduling nondeterminism;
-- shared mutable state;
-- read-modify-write races;
-- atomicity;
-- why `count++` is not one indivisible action;
-- safety versus liveness.
+**实现任务：**创建 `CompletionCounterExperiment`：启动由统一开始闸门协调的多个平台线程；每个线程执行大量递增；记录期望值和观测值；实现一个故意不安全计数器及一个使用 `synchronized` 的正确计数器；用 `join` 而非 `sleep` 等待完成。暂不使用执行器、原子类或并发集合。
 
-**Implementation task**
+**调试练习：**从不安全计数器开始，在不同线程数下反复运行。解释一次正确结果为何不能证明安全。只把 `CountDownLatch` 作为测试脚手架以增加竞争概率，暂不要求解释其内部实现。
 
-Create a small `CompletionCounterExperiment`:
+**预期输出：**线程数、每线程递增数、期望值、观测值的表；至少一次观察到丢失更新（或说明非确定性复现不受保证）；同步版本在反复运行中得到精确终值；一段展示两个递增如何合并为一次的事件交错。
 
-1. start several platform threads with a coordinated start gate;
-2. have each thread perform many increments;
-3. record expected and observed totals;
-4. implement one deliberately unsafe counter;
-5. implement one correct counter using `synchronized`;
-6. wait for completion with `join`, not `sleep`.
+**审查问题：**共享与线程私有的内存分别是什么？直接调用 `run()` 为何不产生并发？`join()` 保证了什么而 `sleep()` 没有？`int` 赋值原子是否足以让 `count++` 安全？修正后计数器的不变量是什么？它如何对应查询片段完成数聚合？
 
-Do not use an executor, atomic class, or concurrent collection yet.
+**常见错误：**用 `sleep` 猜测工作线程结束；每次调用锁不同对象；将计数器设为 `volatile` 就以为递增原子；只测一次；混淆“未观察到失败”和“失败不可能”。
 
-**Debugging exercise**
+**验收：**不借助 AI 生成代码写出两个版本；主线程正确等待每个工作线程；同步版本锁身份明确；能展示三步读/加/写导致丢失更新的交错；将 bug 归类为安全性故障而非“时序问题”。
 
-Begin with the unsafe counter. Run it repeatedly with different thread counts. Explain why a run that returns the correct number does not prove safety. Add a start barrier using `CountDownLatch` only as test scaffolding; you are not required to explain the latch internals yet.
+**生产关联：**并行查询片段、Sink Writer 计数器、指标和完成跟踪都面临“原子读写”与“原子状态迁移”的同一区别。
 
-**Expected outputs**
+### 第 2 周——拒绝停止的工作线程
 
-- a table with threads, increments per thread, expected value, observed value;
-- at least one observed lost-update run, or a written explanation of why nondeterministic reproduction is not guaranteed;
-- an exact final value from the synchronized version across repeated runs;
-- a short event interleaving showing how two increments become one.
+**工程问题：**后台工作线程循环至关闭标志变更，但优化后可能观察不到更新；新启动线程还可能看到未完整发布的配置。
 
-**Review questions**
+**概念：**可见性与有序性；Java 程序员所需层面的编译器/JIT/CPU 重排；作为允许观察集合的 JMM；程序顺序、同步顺序、`synchronizes-with`、happens-before；`volatile` 读写语义；监视器解锁/加锁及线程 start/join 边；安全发布；不可变状态和 `final` 字段；可见性并非复合原子性。
 
-1. What memory is shared and what is thread-local?
-2. Why does calling `run()` directly not create concurrent execution?
-3. What does `join()` guarantee that `sleep()` does not?
-4. Is `int` assignment being atomic enough to make `count++` safe?
-5. State the invariant of the corrected counter.
-6. How is this similar to aggregating completed query fragments?
+**实现任务：**实现 `StoppableWorker`，含不可变工作配置、`start()`/`stop()` 生命周期方法、执行小段模拟工作的循环、有界 `awaitTermination` 和已文档化的单次启动策略。先写普通 boolean 版本作为推理产物，再用 `volatile` 修正关闭标志；除非能说出其保护的不变量，否则不加锁。
 
-**Common mistakes**
+**调试练习：**检查包含非 volatile 停止标志、从构造器逸出/启动后修改的配置、以 `Thread.sleep` 充当同步的错误版本。对每种情形画出存在或缺失的 happens-before 边。目标是推理，不要求每台机器都复现可见性 bug。
 
-- using `sleep` to guess when workers finish;
-- synchronizing on a different object for each call;
-- making the counter `volatile` and assuming increment becomes atomic;
-- testing only once;
-- confusing “I did not observe failure” with “failure is impossible.”
+**预期输出：**构造 → `start()` → 工作线程读取的图；调用方 volatile 停止写 → 工作线程 volatile 停止读的图；启动、观察进展、停止并在截止时间内 join 的测试；解释 `volatile int count; count++` 仍不安全的一段话。
 
-**Acceptance criteria**
+**审查问题：**存在数据竞态时 JMM 允许什么行为？哪个精确动作发布配置？`volatile` 是否使周围操作互斥？为何中断最终应成为阻塞操作的首选取消机制？两个调用方并发 `start()` 会怎样？安全发布如何出现于算子初始化或配置刷新？
 
-- you can write both versions without AI-generated code;
-- the main thread waits correctly for every worker;
-- the synchronized version has an explicit lock identity;
-- you can show a three-step read/add/write lost-update interleaving;
-- you classify the bug as a safety failure, not merely “a timing issue.”
+**常见错误：**把 volatile 说成“直接读主内存”而非 happens-before；只用停止标志、不处理阻塞调用；构造中让 `this` 逸出；吞掉 `InterruptedException`；声称测试证明所有可见性 bug 均不存在。
 
-**Production connection:** Parallel query fragments, sink-writer counters, metrics, and completion tracking all encounter the same distinction between an atomic read/write and an atomic state transition.
+**验收：**关闭在测试上限内终止；配置不可变或安全发布；能列出日常 Java 中至少四条 happens-before 规则；能用此代码区分可见性、有序性、原子性；设计明确生命周期迁移的所有者。
 
----
+**生产关联：**Source Reader 关闭、查询取消、配置发布和 Worker 生命周期在成为框架问题前，首先都是 JMM 问题。
 
-### Week 2 — A worker that refuses to stop
+### 第 3 周——拥有两个最终结果的任务
 
-**Engineering problem:** A background worker loops until a shutdown flag changes, but under optimization it may not observe the update. A newly started worker may also observe incompletely published configuration.
+**工程问题：**完成、取消和超时彼此竞争。任务必须恰好拥有一个终态。
 
-**Concepts**
+**概念：**原子变量、CAS、乐观状态迁移、线性化点、CAS 周围重试循环、原子引用与锁保护的复合状态、无锁推理的局限、了解 ABA 但不实现高级无锁结构。
 
-- visibility and ordering;
-- compiler, JIT, and CPU reordering at the level needed by a Java programmer;
-- the Java Memory Model as a set of allowed observations;
-- program order, synchronization order, `synchronizes-with`, and happens-before;
-- `volatile` read/write semantics;
-- monitor unlock/lock and thread start/join happens-before edges;
-- safe publication;
-- immutable state and `final` fields;
-- why visibility is not compound atomicity.
+**实现任务：**创建 `TaskState` 和 `TaskRecord`，使用 `AtomicReference<TaskState>` 实现合法迁移：`SUBMITTED -> QUEUED`、`QUEUED -> RUNNING`、`RUNNING -> SUCCEEDED | FAILED | CANCELLED | TIMED_OUT`、`SUBMITTED | QUEUED -> CANCELLED`。方法必须报告调用方是否赢得迁移。第一版先不加入结果/错误字段，除非能使其与状态一致发布。
 
-**Implementation task**
+**调试练习：**测试同时释放完成线程和取消线程。错误版本使用“检查再执行”：
 
-Build `StoppableWorker` with:
-
-- an immutable worker configuration;
-- `start()` and `stop()` lifecycle methods;
-- a loop that performs a small unit of simulated work;
-- a bounded `awaitTermination`;
-- a documented single-start policy.
-
-First write a plain-boolean version as a reasoning artifact. Then make the shutdown flag correct with `volatile`. Do not add locks unless you can name the invariant they protect.
-
-**Debugging exercise**
-
-Inspect a broken version with:
-
-- a non-volatile stop flag;
-- configuration that escapes from a constructor or is mutated after start;
-- `Thread.sleep` used as synchronization.
-
-For each, draw the missing or existing happens-before edge. The goal is reasoning; the missing-visibility bug need not reproduce on every machine.
-
-**Expected outputs**
-
-- a happens-before diagram for construction → `start()` → worker read;
-- a second diagram for caller’s volatile stop write → worker’s volatile stop read;
-- a test that starts, observes some progress, stops, and joins within a deadline;
-- a paragraph explaining why `volatile int count; count++` remains unsafe.
-
-**Review questions**
-
-1. What behavior does the JMM permit when a data race exists?
-2. Which exact action publishes the configuration?
-3. Does `volatile` make surrounding operations mutually exclusive?
-4. Why must interruption eventually become the preferred blocking-operation cancellation mechanism?
-5. What changes if two callers may call `start()` concurrently?
-6. How does safe publication appear in operator initialization or configuration refresh?
-
-**Common mistakes**
-
-- describing `volatile` as “reading directly from main memory” rather than using happens-before;
-- using a stop flag without addressing blocking calls;
-- allowing `this` to escape during construction;
-- swallowing `InterruptedException`;
-- claiming a test proves the absence of all visibility bugs.
-
-**Acceptance criteria**
-
-- shutdown terminates within the test bound;
-- configuration is immutable or safely published;
-- you can list at least four happens-before rules used in ordinary Java;
-- you distinguish visibility, ordering, and atomicity using this code;
-- the design states who owns lifecycle transitions.
-
-**Production connection:** Source-reader shutdown, query cancellation, configuration publication, and worker lifecycle are all JMM problems before they are framework problems.
-
----
-
-### Week 3 — A task with two final outcomes
-
-**Engineering problem:** Completion, cancellation, and timeout race with one another. A task must have exactly one terminal outcome.
-
-**Concepts**
-
-- atomic variables;
-- compare-and-set;
-- optimistic state transition;
-- linearization point;
-- retry loops around CAS;
-- atomic reference versus lock-protected compound state;
-- the limits of lock-free reasoning;
-- brief awareness of ABA, without attempting an advanced lock-free structure.
-
-**Implementation task**
-
-Create `TaskState` and `TaskRecord`. Use `AtomicReference<TaskState>` to implement legal transitions such as:
-
-- `SUBMITTED -> QUEUED`;
-- `QUEUED -> RUNNING`;
-- `RUNNING -> SUCCEEDED | FAILED | CANCELLED | TIMED_OUT`;
-- `SUBMITTED | QUEUED -> CANCELLED`.
-
-The method must report whether the caller won the transition. Keep result/error fields out of the first version unless you can publish them consistently with the state.
-
-**Debugging exercise**
-
-Write a test that releases a completion thread and a cancellation thread at the same time. The broken version uses check-then-act:
-
-```text
+```java
 if (!terminal) {
     state = CANCELLED;
 }
 ```
 
-Make the test run many coordinated races and assert that exactly one transition wins.
+多次执行协调竞态，并断言恰有一个迁移获胜。
 
-**Expected outputs**
+**预期输出：**状态迁移表；标记非法迁移的图；双竞争者测试；CAS 线性化点的书面识别；说明何时会用一把锁替代多个原子变量的决策记录。
 
-- a state-transition table;
-- a diagram marking illegal transitions;
-- a two-contender test;
-- a written identification of the CAS linearization point;
-- a decision note explaining when you would prefer one lock over multiple atomics.
+**审查问题：**`compareAndSet` 精确原子化了什么？两个各自原子的字段为何仍可能构成不一致对？线性化点在哪里？终态 CAS 后才写结果会怎样？何时锁更易证明？如何映射查询的 `RUNNING`、`CANCELLED`、`FINISHED` 竞态？
 
-**Review questions**
+**常见错误：**确认 CAS 成功前就做副作用；允许从终态迁出；为耦合不变量用独立原子变量；发布 `SUCCEEDED` 后才写结果；未证明进展性就称代码“无锁”。
 
-1. What exactly is atomic in `compareAndSet`?
-2. Why can two individually atomic fields still form an inconsistent pair?
-3. Where is the linearization point?
-4. What happens if result data is written after the terminal CAS?
-5. When would a lock make the design easier to prove?
-6. How does this map to a query’s `RUNNING`, `CANCELLED`, and `FINISHED` race?
+**验收：**只有合法迁移能成功；恰一个终态竞争者获胜；终态安全发布关联的不可变结果或错误；测试协调竞争者而非只依赖随机 sleep；能针对该状态机论证 CAS 或锁的选择。
 
-**Common mistakes**
+**生产关联：**查询状态、检查点状态、异步请求完成与取消都需要唯一权威终态迁移。
 
-- performing side effects before knowing the CAS succeeded;
-- allowing transition out of a terminal state;
-- using separate atomics for coupled invariants;
-- writing the result after publishing `SUCCEEDED`;
-- calling code “lock-free” without proving progress properties.
+### 第 4 周——从第一原则实现有界队列
 
-**Acceptance criteria**
+**工程问题：**生产者提交快于 Worker 消费。无界列表最终耗尽内存；有界队列必须正确阻塞，同时不丢失、不重复任务。
 
-- only legal transitions can succeed;
-- exactly one terminal contender wins;
-- terminal state safely publishes any associated immutable result or error;
-- tests coordinate contenders rather than depend only on random sleeps;
-- you can defend either CAS or a lock for this specific state machine.
+**概念：**内置锁与监视器所有权、可重入性、守护块、`wait`/`notifyAll`/等待集、条件谓词、虚假唤醒、为何在循环中等待、生产者-消费者、作为显式策略的背压、可中断等待。
 
-**Production connection:** Query status, checkpoint state, asynchronous request completion, and cancellation all need a single authoritative terminal transition.
+**实现任务：**从头实现 `MonitorBoundedQueue<T>`：固定容量；一个内置锁；满时等待的 `put(T)`；空时等待的 `take()`；采用一致同步策略的 `size()`；中断传播。这是学习组件，生产代码稍后用标准 `BlockingQueue` 取代。
 
----
+**调试练习：**构造错误版本或推演改动：`while` 换成 `if`；无充分理由地把 `notifyAll` 换成 `notify`；在锁外检查谓词；吞掉中断；持有队列锁时调用未知任务代码。使用多生产者/消费者、唯一任务 ID 与线程安全测试结果集检测缺失或重复。
 
-### Week 4 — A bounded queue from first principles
+**预期输出：**不变量 `0 <= size <= capacity`；“未满”和“非空”的谓词表；统计每个提交 ID 的压力测试；阻塞生产者或消费者的中断测试；第 1 月检查点记录。
 
-**Engineering problem:** Producers can submit faster than workers consume. An unbounded list eventually exhausts memory; a bounded queue must block correctly without losing or duplicating tasks.
+**审查问题：**`wait()` 为什么释放监视器而 `sleep()` 不释放？唤醒后为何必须重检条件？哪个线程会将每个谓词从假改为真？在队列锁下运行用户代码为何危险？阻塞是否是唯一背压策略？过载时无界邮箱对流式算子意味着什么？
 
-**Concepts**
+**常见错误：**`if` 代替 `while`；忘记所有受保护状态访问须遵循同一锁策略；状态改变前通知；返回内部可变存储；实现出错时测试可无限挂住。
 
-- intrinsic locks and monitor ownership;
-- reentrancy;
-- guarded blocks;
-- `wait`, `notifyAll`, and wait sets;
-- condition predicates;
-- spurious wakeups;
-- why waiting occurs in a loop;
-- producer-consumer;
-- backpressure as an explicit policy;
-- interruptible waiting.
+**验收：**容量永不超过上限；协调测试中已接纳项不丢失、不重复；阻塞操作可中断；测试有时间边界，不会无限挂住整套测试；能解释安全性及活性仍依赖生产者/消费者的位置。
 
-**Implementation task**
+**生产关联：**有界邮箱、Source 到 Sink 的失衡、准入队列、网络缓冲区都会将超额需求转换成等待、拒绝、丢弃或失败。
 
-Implement `MonitorBoundedQueue<T>` from scratch using:
+### 第 1 月检查点
 
-- a fixed capacity;
-- one intrinsic lock;
-- `put(T)` that waits while full;
-- `take()` that waits while empty;
-- `size()` with a consistent synchronization policy;
-- interruption propagation.
+仅在无需笔记即可做到以下各项时通过：区分原子性、可见性、有序性并各举例；画出 `synchronized`、`volatile`、`start`、`join` 的 happens-before 边；实现正确的同步计数器；解释并测试一个单终态 CAS 迁移；实现监视器有界队列中央的 `put`/`take` 逻辑；在每个组件中指出一个安全性和一个活性风险。
 
-This is a learning component. It will later be replaced in production code by a standard `BlockingQueue`.
+前四项任一失败，第 5 周改为巩固周；不新增原语。
 
-**Debugging exercise**
+### 第 5 周——多条件与租户许可
 
-Create broken variants or reason through mutations:
+**工程问题：**一个队列条件唤醒过多无关等待者，且嘈杂租户可能占满所有 Worker。
 
-- replace `while` with `if`;
-- replace `notifyAll` with an unjustified `notify`;
-- check the predicate outside the lock;
-- swallow interruption;
-- call unknown task code while holding the queue lock.
+**概念：**`ReentrantLock`、`Condition`、可中断加锁、`try/finally` 所有权纪律、公平性及吞吐代价、用信号量表示许可、闭锁与屏障协调工具、多资源获取引入的死锁前提。
 
-Use multiple producers and consumers, unique task IDs, and a thread-safe test-side result set to detect missing or duplicate items.
+**实现任务：**用一个 `ReentrantLock` 与 `notEmpty`/`notFull` 两个条件重写 `LockBoundedQueue<T>`；添加每租户一个 `Semaphore` 的 `TenantLimiter`；返回一个 `close()` 恰好释放一次的小许可对象，以便任务使用 `try/finally` 或 try-with-resources。测试用 `CountDownLatch` 协调启动；做一个小 `CyclicBarrier` 实验，但没有真实用处不放入生产代码。
 
-**Expected outputs**
+**调试练习：**异常路径遗漏解锁；任务失败时泄漏租户许可；以不一致顺序获取队列/资源锁和租户许可；比较公平与非公平信号量，但不声称一次短运行能证明公平性。
 
-- a documented invariant: `0 <= size <= capacity`;
-- a predicate table for “not full” and “not empty”;
-- a stress test that accounts for every submitted ID;
-- an interruption test for a blocked producer or consumer;
-- Month 1 checkpoint notes.
+**预期输出：**两个守护谓词和各条件的 signal 方；证明租户运行数不超限的测试；证明失败路径归还许可的测试；锁顺序说明；监视器与显式锁版本的简短比较。
 
-**Review questions**
+**审查问题：**`Condition` 相比单一监视器等待集增加什么能力？为何 `unlock()` 必须在 `finally`？公平锁是否保证应用级公平？如果任务在等待全局满队列前取得租户许可会怎样？信号量保护数据还是表示容量？租户槽位如何类似共享查询集群的准入控制？
 
-1. Why does `wait()` release the monitor but `sleep()` does not?
-2. Why must the condition be rechecked after waking?
-3. Which thread changes each predicate from false to true?
-4. Why is executing user code under the queue lock dangerous?
-5. Is blocking the only possible backpressure policy?
-6. What would an unbounded mailbox mean for a streaming operator under overload?
+**验收：**队列仍满足第 4 周测试；成功、失败、取消、已有拒绝路径均无许可泄漏；租户限额不被突破；锁与许可获取顺序有文档；能说明生产中为何应用标准库队列替代教学队列。
 
-**Common mistakes**
+### 第 6 周——有界执行器与显式过载
 
-- `if` instead of `while`;
-- forgetting that every access to the guarded state follows the same lock policy;
-- notifying before the state change;
-- returning internal mutable storage;
-- tests that can hang forever when the implementation is broken.
+**工程问题：**服务接收工作的速度快于完成速度。默认执行器选择会隐藏无界队列或失控建线程，异常也可能消失。
 
-**Acceptance criteria**
+**概念：**`Executor`、`ExecutorService`、`Callable`、`Future`；`ThreadPoolExecutor` 的核心线程数、最大线程数、存活时间与队列交互；有界 `BlockingQueue`、拒绝策略、准入与执行的区别、并发集合和复合操作、线程工厂与未捕获异常处理、`execute` 和 `submit` 的异常可见性、作为直觉而非死记公式的 Little 定律。
 
-- capacity is never exceeded;
-- no accepted item is lost or duplicated in the coordinated test;
-- blocked operations are interruptible;
-- test methods have time bounds and cannot hang the suite indefinitely;
-- you can explain why the implementation is safe and where liveness still depends on consumers/producers.
+**实现任务：**用显式构造的 `ThreadPoolExecutor` 创建 `AdmissionExecutor`：可配置固定 Worker 数；有界队列；命名线程；将拒绝转为 `REJECTED_OVERLOADED` 等领域结果；接入 `TaskRegistry` 和 `TenantLimiter`；记录已接纳/拒绝/运行/完成计数；不使用无界执行器工厂。主项目以合适标准 `BlockingQueue` 替换自定义队列，教学实现保留为实验室。
 
-**Production connection:** Bounded mailboxes, source-to-sink imbalance, admission queues, and network buffers all turn excess demand into waiting, rejection, shedding, or failure.
+**调试练习：**让任务等待 latch，确定性填满 Worker 和队列；再提交一个任务并验证选定拒绝行为。各创建一个在 `execute` 和 `submit` 下抛异常的任务，观察故障在哪里报告。
 
----
+**预期输出：**Worker 数、队列容量、拒绝策略配置表；不依赖机器速度的饱和测试；两种提交方式可见的失败结果；可对账的指标；解释常见配置下无界队列为何使最大线程数预期失效。
 
-### Month 1 Checkpoint
+**验收：**本层内存由显式 Worker 和队列容量限制；饱和产生确定且可观察结果；每个已接纳任务可在注册表追溯；任务失败被显式暴露而不是偶然写日志；能解释每个执行器参数及交互。
 
-Pass only if you can do all of the following without notes:
+### 第 7 周——取消、超时、重试与关闭
 
-- explain atomicity, visibility, and ordering with distinct examples;
-- draw the happens-before edges for `synchronized`, `volatile`, `start`, and `join`;
-- implement a correct synchronized counter;
-- explain and test a one-terminal-state CAS transition;
-- implement the central `put`/`take` logic of a bounded monitor queue;
-- identify one safety and one liveness risk in each component.
+**工程问题：**调用方超时、Worker 阻塞并且关闭开始。系统必须区分超时和失败，协作停止工作，归还许可，并避免不安全的重复重试。
 
-If one of the first four items fails, Week 5 becomes a consolidation week. Do not add new primitives.
+**概念：**中断作为协作取消、interrupt 状态、阻塞方法与 `InterruptedException`、无法继续抛出时恢复中断状态、取消竞态、截止时间与经过时长超时、`Future.cancel(true)`、异常传播、优雅/强制关闭、重试安全性、幂等性与副作用。
 
----
+**实现任务：**加入每任务截止时间、取消操作、保留 Future 或其他显式句柄以观察异步失败、在长 CPU 循环中检查中断的任务代码，以及两阶段关闭：停止准入，等待宽限期，再中断剩余工作。为显式幂等的模拟读取写 `RetryPolicy` 决策表，实际实现推迟到第 16 周；不要实现通用重试框架。
 
-### Week 5 — Multiple conditions and tenant permits
+**调试练习：**使用四种故障任务：可中断 sleep、阻塞队列等待、检查中断的 CPU 循环、故意忽略中断的坏循环。观察关闭并为坏场景获取线程转储。再加入每次都抛异常的任务，证明保留终态错误。
 
-**Engineering problem:** One queue condition wakes too many unrelated waiters, and a noisy tenant can occupy every worker.
+**预期输出：**关闭时序图；取消运行前、运行中、超时与完成竞态、异常保留测试；模拟 `SELECT`、元数据读取、CDC apply、外部副作用的重试安全表；关闭时排队任务处理文档。
 
-**Concepts**
-
-- `ReentrantLock`;
-- `Condition`;
-- interruptible lock acquisition;
-- `try/finally` ownership discipline;
-- fairness and its throughput cost;
-- semaphores for permits;
-- latches and barriers as coordination tools;
-- deadlock preconditions introduced through multi-resource acquisition.
-
-**Implementation task**
-
-1. Reimplement the bounded queue as `LockBoundedQueue<T>` using one `ReentrantLock` and two conditions: `notEmpty` and `notFull`.
-2. Add a `TenantLimiter` backed by one `Semaphore` per tenant.
-3. Return a small permit object whose `close()` releases exactly once, so task execution can use `try/finally` or try-with-resources.
-
-Use a `CountDownLatch` in tests to coordinate starts. Perform one small `CyclicBarrier` experiment, but do not add it to production code without a real use.
-
-**Debugging exercise**
-
-- omit unlock from an exception path;
-- leak a tenant permit when a task fails;
-- acquire a queue/resource lock and tenant permit in inconsistent order;
-- compare fair and non-fair semaphore behavior without claiming that one short run proves fairness.
-
-**Expected outputs**
-
-- the two guarded predicates and which condition signals each;
-- a test proving the tenant’s running count never exceeds its limit;
-- a failure-path test proving permits are returned;
-- a lock-order note;
-- a short comparison of monitor and explicit-lock versions.
-
-**Review questions**
-
-1. What ability does `Condition` add over a single monitor wait set?
-2. Why must `unlock()` be in `finally`?
-3. Does a fair lock guarantee application-level fairness?
-4. What happens if a task acquires a tenant permit before waiting in a full global queue?
-5. Is a semaphore protecting data or representing capacity?
-6. How do tenant slots resemble admission control in a shared query cluster?
-
-**Common mistakes**
-
-- calling `await` or `signal` without holding the lock;
-- leaking permits;
-- interpreting semaphore availability as a perfectly consistent metric;
-- choosing fair mode automatically;
-- acquiring scarce resources before a potentially long queue wait.
-
-**Acceptance criteria**
-
-- queue behavior still satisfies Week 4’s tests;
-- no permit leaks on success, failure, cancellation, or rejected admission paths already present;
-- the tenant limit is never exceeded;
-- lock and permit acquisition order is documented;
-- you can say why standard library queues should replace your educational queue.
-
-**Production connection:** Resource groups, tenant quotas, connector parallelism, and per-source limits are permit and scheduling policies, not merely thread counts.
-
----
-
-### Week 6 — Bounded executor and explicit overload
-
-**Engineering problem:** The service accepts work faster than it can finish. Default executor choices hide unbounded queues or uncontrolled thread creation, and exceptions disappear.
-
-**Concepts**
-
-- `Executor`, `ExecutorService`, `Callable`, `Future`;
-- `ThreadPoolExecutor` core size, maximum size, keep-alive, and queue interaction;
-- bounded `BlockingQueue`;
-- rejection policies;
-- admission control versus execution;
-- concurrent collections and compound operations;
-- thread factories and uncaught exception handling;
-- `execute` versus `submit` exception visibility;
-- Little’s Law as intuition, not a capacity formula to memorize.
-
-**Implementation task**
-
-Create `AdmissionExecutor` using an explicitly constructed `ThreadPoolExecutor`:
-
-- fixed, configurable worker count;
-- bounded queue;
-- named threads;
-- rejection translated into a domain result such as `REJECTED_OVERLOADED`;
-- integration with `TaskRegistry` and `TenantLimiter`;
-- accepted/rejected/running/completed counters;
-- no unbounded executor factory.
-
-Replace your custom queue in the main project with an appropriate standard `BlockingQueue`. Keep the custom implementations as learning labs.
-
-**Debugging exercise**
-
-Run a workload where tasks block on a latch so workers and queue fill deterministically. Submit one more task and verify the chosen rejection behavior. Create one task that throws under `execute` and one under `submit`; observe where each failure is reported.
-
-**Expected outputs**
-
-- a configuration table showing worker count, queue capacity, and rejection policy;
-- a saturation test that does not depend on machine speed;
-- visible failure outcomes for both task submission styles;
-- metrics whose counts reconcile;
-- an explanation of why an unbounded queue defeats maximum-pool-size expectations in common configurations.
-
-**Review questions**
-
-1. When does `ThreadPoolExecutor` create a thread versus enqueue?
-2. What overload signal reaches the caller?
-3. Why can caller-runs create unexpected latency or deadlock?
-4. Which concurrent-map operations are atomic, and which multi-step sequences are not?
-5. Where do exceptions from `submit` live?
-6. How would a query gateway expose saturation differently from execution failure?
-
-**Common mistakes**
-
-- `Executors.newFixedThreadPool` without noticing its unbounded queue;
-- silently discarding rejected tasks;
-- recording `RUNNING` before execution actually starts;
-- forgetting to inspect returned futures;
-- treating metric counters as the source of truth for task state.
-
-**Acceptance criteria**
-
-- memory consumption is bounded by explicit workers and queue capacity at this layer;
-- saturation produces a deterministic, observable result;
-- every accepted task is traceable in the registry;
-- task failures are surfaced, not merely logged by accident;
-- you can explain every executor parameter and its interaction with the others.
-
-**Production connection:** Query admission, task slots, mailbox pressure, and service overload require an explicit capacity contract.
-
----
-
-### Week 7 — Cancellation, timeouts, retries, and shutdown
-
-**Engineering problem:** A caller times out, a worker is blocked, and shutdown begins. The system must distinguish timeout from failure, stop work cooperatively, return permits, and avoid unsafe duplicate retries.
-
-**Concepts**
-
-- interruption as cooperative cancellation;
-- interrupt status;
-- blocking methods and `InterruptedException`;
-- restoring interrupt status when an API cannot rethrow;
-- cancellation races;
-- deadlines versus elapsed timeouts;
-- `Future.cancel(true)`;
-- exception propagation;
-- graceful versus forced shutdown;
-- retry safety, idempotency, and side effects.
-
-**Implementation task**
-
-Add:
-
-- a per-task deadline;
-- a cancellation operation;
-- retained futures or another explicit handle so asynchronous failure is observable;
-- task code that checks interruption during long CPU loops;
-- a two-stage shutdown: stop admission, await a grace period, then interrupt remaining work;
-
-Write a `RetryPolicy` decision table for explicitly idempotent simulated reads, but defer its implementation to Week 16. Do not implement a general-purpose retry framework.
-
-**Debugging exercise**
-
-Use four fault tasks:
-
-1. interruptible sleep;
-2. blocking queue wait;
-3. CPU loop that checks interruption;
-4. deliberately bad loop that ignores interruption.
-
-Observe shutdown behavior and take a thread dump for the bad case. Add a task that throws on every attempt and prove that the terminal error is retained.
-
-**Expected outputs**
-
-- a shutdown sequence diagram;
-- tests for cancel-before-run, cancel-during-run, timeout-versus-completion race, and exception retention;
-- a retry-safety table for simulated `SELECT`, metadata fetch, CDC apply, and external side effect;
-- documentation of what happens to queued tasks during shutdown.
-
-**Review questions**
-
-1. Why can Java not safely force-stop an arbitrary thread?
-2. What should code do after catching `InterruptedException`?
-3. What is the difference between cancelling the caller’s wait and stopping the underlying work?
-4. Which component owns the final state when completion races with timeout?
-5. Why is “retry three times” not a correctness policy?
-6. How do query cancellation and Flink job/operator cancellation depend on cooperative boundaries?
-
-**Common mistakes**
-
-- swallowing interruption;
-- converting every exception into a retry;
-- retrying non-idempotent effects;
-- dropping `Future` objects and losing failures;
-- calling `shutdownNow` and assuming all tasks stopped;
-- holding locks while waiting for executor termination.
-
-**Acceptance criteria**
-
-- cooperative tasks stop within a documented bound;
-- the bad task is diagnosed and cannot hang the test process forever;
-- futures/errors are retained and observable;
-- tenant permits and other resources are released on every exit path;
-- retry eligibility is explicit; retry execution remains postponed until Week 16;
-- shutdown policy is written before being implemented.
-
-**Production connection:** Query timeout, connector retry, CDC duplication, asynchronous sink failures, and service deployment shutdown all require explicit ownership and semantics.
-
----
-
-### Week 8 — Liveness, stress testing, and first performance evidence
-
-**Engineering problem:** The service is correct under normal tests but can deadlock, starve a tenant, or collapse under contention. You need evidence that distinguishes correctness from performance.
-
-**Concepts**
-
-- deadlock, livelock, starvation, and fairness;
-- Coffman deadlock conditions;
-- lock ordering and open calls;
-- stress testing versus deterministic coordination;
-- thread dumps and blocked/waiting states;
-- throughput, latency percentiles, queue wait, and rejection rate;
-- warmup and measurement errors;
-- contention;
-- cache lines and false sharing at a conceptual level;
-- why benchmark results are not correctness proofs.
-
-**Implementation task**
-
-1. Build `QueryGateLoadScenario` with multiple tenants and configurable task duration.
-2. Record submitted, accepted, rejected, succeeded, failed, and cancelled counts.
-3. Record queue-wait and execution-time distributions.
-4. Compare one deliberately contended design with a less contended design, changing one variable only.
-5. Add either:
-   - one small jcstress test for a Week 2 or Week 3 primitive, or
-   - a repeated two-actor stress harness if setup would consume the session.
-
-Do not tune until the accounting invariants pass.
-
-**Debugging exercise**
-
-- create a two-lock deadlock in a test-only lab;
-- capture a thread dump and identify owners and waiters;
-- correct it with a global lock order or by eliminating nested acquisition;
-- describe a livelock example and a starvation scenario;
-- inspect whether a global metric lock becomes a contention point.
-
-**Expected outputs**
-
-- an invariant reconciliation report;
-- one annotated thread dump;
-- a small load table with throughput, p50/p95 latency, queue wait, and rejection count;
-- a before/after contention comparison with limitations;
-- a one-paragraph false-sharing explanation tied to frequently updated counters;
-- Month 2 checkpoint notes.
-
-**Review questions**
-
-1. Which Coffman conditions were present in the deadlock?
-2. Can fair scheduling reduce throughput? Why?
-3. Why is average latency insufficient?
-4. What does a thread in `BLOCKED` mean compared with `WAITING`?
-5. Why might adjacent hot counters interfere without sharing a logical variable?
-6. What evidence supports correctness, and what separate evidence supports performance?
-
-**Common mistakes**
-
-- relying only on random sleeps to create concurrency;
-- writing tests that hang with no deadline;
-- benchmarking startup/JIT compilation and treating it as steady state;
-- changing several variables at once;
-- optimizing counters before fixing task accounting;
-- claiming false sharing without measurement or layout evidence.
-
-**Acceptance criteria**
-
-- all accounting identities hold under the load scenario;
-- the deliberate deadlock is diagnosed from evidence, not guessed;
-- corrected production paths use a documented lock order or avoid nested locks;
-- performance results include workload, machine/JDK context, warmup limitations, and no exaggerated claim;
-- you can explain safety, liveness, performance, and maintainability separately for `QueryGate`.
-
-**Production connection:** Backpressure incidents, thread-pool starvation, checkpoint stalls, noisy-neighbor behavior, and misleading benchmarks are common in query and streaming systems.
-
----
-
-### Month 2 Checkpoint
-
-You pass Phase I when you can:
-
-- draw the complete `QueryGate` shared-state map;
-- defend each lock, atomic, semaphore, queue, and concurrent collection;
-- demonstrate bounded overload behavior;
-- cancel and shut down cooperative tasks without leaking permits;
-- surface asynchronous exceptions;
-- diagnose a test deadlock from a thread dump;
-- explain why your tests provide evidence but not a mathematical proof;
-- reimplement one central component from a blank file in 30 minutes.
-
-If the state machine, boundedness, or shutdown criteria fail, repeat an integration week before starting runtime topics.
-
----
-
-## 7. Weeks 9–24: Concrete Exercises and Deliverables
-
-These weeks remain project-oriented but are intentionally less prescriptive than Phase I. Each still uses the weekly design → implementation → test → explanation loop.
-
-### Week 9 — Processes, threads, scheduling, and blocking
-
-**Problem:** Explain why increasing worker count can reduce throughput.
-
-**Work:** Observe `QueryGate` with thread dumps while tasks are CPU-bound, sleeping, lock-blocked, and queue-waiting. Record thread states and relate them to runnable work, context switching, and CPU cores. Use OS-level observations available on your machine, but do not begin kernel study.
-
-**Deliverable:** `docs/runtime-observations.md` with four workload types, predicted behavior, observed thread states, and one worker-count experiment.
-
-**Acceptance:** You can distinguish process resources from thread resources, runnable from running, blocking from waiting, and concurrency from parallelism.
-
-### Week 10 — JVM memory, allocation, GC, and safepoints
-
-**Problem:** A workload has latency spikes even though no lock is obviously contended.
-
-**Work:** Create an allocation-heavy task and a reuse-oriented comparison. Capture a short Java Flight Recorder profile. Identify allocation rate, one GC pause observation, hot methods, and thread activity. Do not tune collectors.
-
-**Deliverable:** One annotated JFR screenshot or text summary plus a hypothesis/evidence table.
-
-**Acceptance:** You can explain stack, heap, object lifetime, allocation pressure, GC pause versus application lock pause, and why one recording is not universal evidence.
-
-### Week 11 — Remote calls, TCP intuition, and timeout budgets
-
-**Problem:** A “query” calls a simulated remote service that is slow, unavailable, or returns partial progress.
-
-**Work:** Add a `RemoteStage` abstraction with separate connection/setup and execution/read timeout concepts, simulated without building a real server if necessary. Propagate a single end-to-end deadline through queue wait and execution. Test slow response, no response, and late success after caller timeout.
-
-**Deliverable:** A timeout-budget diagram and tests showing that queue time reduces remaining execution time.
-
-**Acceptance:** You can explain why retries multiply load, why a caller timeout does not automatically cancel remote work, and why TCP connection, read, and application deadlines are different concerns.
-
-### Week 12 — Measurement, contention, and false sharing revisited
-
-**Problem:** Decide whether a global counter/lock is a real bottleneck.
-
-**Work:** Create a minimal JMH benchmark for one isolated question, such as `AtomicLong` versus `LongAdder` under varying contention. Include warmup and multiple forks. Optionally inspect object layout or padding only to investigate measured behavior.
-
-**Deliverable:** `docs/benchmark-report.md` with question, hypothesis, setup, result, limitations, and decision. Complete Month 3 checkpoint.
-
-**Acceptance:** You can distinguish microbenchmark results from end-to-end capacity and refuse to adopt the “winner” when the project’s correctness semantics differ.
-
-### Month 3 Checkpoint
-
-- Explain a latency spike using at least two competing hypotheses and evidence.
-- Interpret a thread dump and a small JFR recording.
-- Explain why CPU-bound and I/O-bound pools have different sizing pressures.
-- Propagate one deadline across queue and execution.
-- Defend one benchmark without overstating it.
-
-If runtime tooling consumes too much time, keep one recorded example and move on. Tool mastery is not the objective.
-
-### Week 13 — Query execution pipelines
-
-**Problem:** A query contains scan, filter, and aggregate stages with different blocking and CPU behavior.
-
-**Work:** Model a finite query as a three-stage task or small DAG. Record per-stage timing and distinguish inter-query concurrency from intra-query parallelism. Keep data generated in memory; do not implement SQL parsing or storage.
-
-**Deliverable:** An execution diagram and one working `SimulatedQueryPlan`.
-
-**Acceptance:** You can explain pipeline versus blocking stages, why adding threads at every stage can oversubscribe the machine, and where backpressure belongs.
-
-### Week 14 — Fair multi-tenant scheduling
-
-**Problem:** One tenant fills the FIFO queue, so small tasks from another tenant wait behind all of its work.
-
-**Work:** Implement the simplest scheduler that improves isolation: per-tenant queues with round-robin selection. Keep global and per-tenant bounds. Define behavior when tenants have unequal limits.
-
-**Deliverable:** A before/after workload showing queue wait by tenant and an ADR explaining the fairness/throughput trade-off.
-
-**Acceptance:** No tenant exceeds its limit, queue memory remains bounded, and a continuously active tenant cannot indefinitely starve another active tenant under the documented assumptions.
-
-### Week 15 — Streaming producers and backpressure
-
-**Problem:** A CDC producer emits events faster than the consumer applies them.
-
-**Work:** Add a rate-controlled `CdcWorkload`. Track produced position, accepted position, processed position, queue lag, and rejected/blocked time. Compare block, reject, and slow-producer policies conceptually; implement only one.
-
-**Deliverable:** A lag-over-time table or plot and a policy note.
-
-**Acceptance:** You can explain why buffering delays overload rather than removes it, and connect queue capacity, throughput mismatch, lag, and recovery time.
-
-### Week 16 — Delivery semantics, idempotency, and deduplication
-
-**Problem:** A task may finish its side effect and then fail before acknowledging completion.
-
-**Work:** Add idempotency keys to one simulated CDC apply or metadata update path. Inject failure before effect, after effect, and after acknowledgement. Implement a small bounded deduplication record or deterministic upsert rule.
-
-**Deliverable:** A failure-point table mapping each failure to retry outcome and duplicate risk. Complete Month 4 checkpoint.
-
-**Acceptance:** You can distinguish execution, acknowledgement, durable effect, retry, and final commit. You do not claim exactly-once without defining the boundary and durable state.
-
-### Month 4 Checkpoint
-
-- Explain inter-query and intra-query concurrency using your code.
-- Demonstrate that tenant fairness improved under a reproducible workload.
-- Explain a streaming backlog quantitatively.
-- Show which failures make retry safe or unsafe.
-- Relate the project to one real Flink/CDC or query-engine incident pattern you have seen.
-
-If scheduling code becomes complex, remove weights and priorities. Keep bounded round-robin behavior and understandable invariants.
-
-### Week 17 — Deterministic context planning for AI
-
-**Problem:** An agent requests context, but permissions and required sources must be resolved deterministically before semantic reasoning.
-
-**Work:** Add `ContextRequest`, `ContextPlan`, and `ContextTask` types. A deterministic planner selects permitted structured data, metadata, and simulated documents. Permission rejection happens before retrieval work enters the executor.
-
-**Deliverable:** A context-plan schema and tests proving forbidden sources are never scheduled.
-
-**Acceptance:** Permission enforcement is not delegated to an LLM, and every selected source has an explicit reason and identity.
-
-### Week 18 — Freshness, versions, and CDC-fed context
-
-**Problem:** An answer uses context that is internally consistent but stale.
-
-**Work:** Attach source version, schema version, event position, and observed-at time to context results. Simulate a snapshot followed by CDC updates. Define a freshness requirement and reject or label results that do not meet it.
-
-**Deliverable:** A provenance record and freshness test covering an update race.
-
-**Acceptance:** You can distinguish event time, processing/observation time, durable source position, and “fresh enough for this request.”
-
-### Week 19 — Metrics, traces, and service-level objectives
-
-**Problem:** Overall latency looks healthy while one tenant experiences queue starvation and timeouts.
-
-**Work:** Add trace IDs and structured lifecycle events. Report queue wait, execution latency, end-to-end latency, outcome, retry count, and tenant. Define two modest SLO-style objectives for the simulator.
-
-**Deliverable:** One trace narrative and a per-tenant load report.
-
-**Acceptance:** Metrics reconcile with task states; dimensions are bounded; queue wait is separate from execution; logs preserve the causal path of one task.
-
-### Week 20 — Fault-injection campaign
-
-**Problem:** Validate system behavior under overload and partial failure rather than only happy paths.
-
-**Work:** Run a small matrix across saturation, slow task, thrown exception, permit leak attempt, ignored interruption, retryable failure, non-retryable side effect, and shutdown during load.
-
-**Deliverable:** `docs/failure-model.md` containing expected result, actual result, evidence, and fix for each fault. Complete Month 5 checkpoint.
-
-**Acceptance:** No fault disappears silently; invariants reconcile after each bounded test; known uncooperative tasks are reported honestly.
-
-### Month 5 Checkpoint
-
-- Demonstrate permission-before-retrieval.
-- Trace freshness and provenance for one context result.
-- Diagnose one tenant-specific SLO failure.
-- Run the fault matrix without manual timing guesses.
-- Explain which system decisions are deterministic and which could reasonably use AI assistance.
-
-If the context layer weakens the executor’s clarity, keep it as a thin typed workload. Do not build embeddings, a vector database, or an agent framework.
-
-### Week 21 — Correctness audit and simplification
-
-**Problem:** Features accumulated faster than the proof of correctness.
-
-**Work:** Audit every shared field and state transition. Remove redundant atomics, locks, metrics, or abstractions. Write a table with state, owner, synchronization policy, and invariant.
-
-**Deliverable:** `docs/invariants.md` and at least one simplification commit.
-
-**Acceptance:** Every mutable shared field has a documented policy; no lock is justified only by “thread safety”; terminal-state and shutdown ownership remain unambiguous.
-
-### Week 22 — Capacity curve and one justified optimization
-
-**Problem:** Find the saturation point and dominant bottleneck for one declared workload.
-
-**Work:** Run the same workload across several concurrency levels. Record throughput, p95 latency, queue wait, rejection, CPU behavior, and tenant distribution. Make at most one optimization and rerun.
-
-**Deliverable:** Capacity table, bottleneck hypothesis, evidence, change, and before/after result.
-
-**Acceptance:** The test is reproducible enough to support a narrow conclusion, and you reject changes that improve throughput by violating fairness or correctness.
-
-### Week 23 — Portfolio-quality design and incident document
-
-**Problem:** Make the engineering legible to a reviewer who did not watch you build it.
-
-**Work:** Write:
-
-- architecture and component responsibilities;
-- key invariants and happens-before arguments;
-- overload, retry, and shutdown policies;
-- three alternatives you rejected;
-- a short incident report from one injected failure;
-- benchmark limitations;
-- query, streaming, and data-for-AI connections.
-
-**Deliverable:** Complete `README.md`, `docs/architecture.md`, and one incident report.
-
-**Acceptance:** Every major claim links to code, a test, or measured evidence. Remove generic claims that could describe any project.
-
-### Week 24 — Final technical defense and release
-
-**Problem:** Prove that the knowledge is yours, not merely present in the repository.
-
-**Work:**
-
-1. Reimplement a bounded state transition or small blocking component from a blank file.
-2. Debug one previously unseen seeded concurrency bug.
-3. Give a 15-minute recorded explanation of the architecture.
-4. Answer the final defense questions below.
-5. Tag or otherwise record version `v1.0`.
-
-**Final defense questions**
-
-- What are the three most important invariants?
-- Where are the critical happens-before edges?
-- What is bounded, and what could still grow?
-- Who owns cancellation and terminal state?
-- How are asynchronous failures surfaced?
-- What overload policy does the caller observe?
-- How can a tenant be starved?
-- Which retries are safe, and why?
-- What would change inside a real query engine or Flink operator?
-- Which deterministic boundaries make the service suitable for AI context delivery?
-
-**Deliverable:** Final demo, defense recording/notes, release commit, and a next-six-month gap assessment.
-
-**Acceptance:** You can answer from code and evidence without asking AI to generate the explanation.
-
----
-
-## 8. AI Assistance Rules
-
-AI is a mentor, reviewer, adversarial tester, and documentation navigator. It is not the first implementer of core exercises.
-
-### The assistance ladder
-
-For core exercises, move through these levels in order:
-
-| Level | What AI may do |
-|---:|---|
-| 0 | No AI for the first 20 minutes: write the problem model, shared state, invariants, and proposed API |
-| 1 | Ask Socratic questions and identify missing concerns; no code or pseudocode |
-| 2 | Give one localized conceptual hint or point to one relevant API/document section |
-| 3 | Give pseudocode for the difficult fragment, not a compilable class |
-| 4 | Review your compiling attempt and identify defects; propose minimal edits, not a rewrite |
-| 5 | After acceptance, provide a reference implementation for comparison |
-
-Do not jump from Level 0 to Level 4 because the first attempt fails.
-
-### Allowed from the beginning
-
-- asking for clarification of terminology;
-- asking for official documentation locations;
-- asking AI to quiz you;
-- asking AI to review a design without producing code;
-- asking AI to propose adversarial scenarios after you write your initial test plan;
-- asking AI to explain a compiler error after you first read it and form a hypothesis.
-
-### Restricted during core implementation
-
-- no complete class generation before your first compiling attempt;
-- no copy-pasting code you cannot explain line by line;
-- no asking AI to “fix all tests”;
-- no accepting a primitive because it appears to work;
-- no AI-written design explanation submitted as your own;
-- no broad refactor until the smallest failing invariant is identified.
-
-### The ownership test for any AI-assisted code
-
-Code is yours only if you can:
-
-1. explain each shared field and synchronization operation;
-2. predict behavior when a lock, `volatile`, CAS, or interrupt check is removed;
-3. write an adversarial test;
-4. modify it for a changed requirement without asking for regeneration;
-5. re-create its central mechanism from a blank file one week later.
-
-If you cannot do these, mark the component “borrowed, not learned” and revisit it.
-
-### Prompt format to use with me as mentor
-
-```text
-Problem:
-My invariant:
-Shared mutable state:
-Proposed synchronization:
-Failure and shutdown behavior:
-What I have tried:
-Evidence:
-Assistance level requested (1-5):
+```mermaid
+sequenceDiagram
+    participant C as 调用方
+    participant A as 准入控制器
+    participant E as 执行器
+    participant T as 任务
+    C->>A: 请求关闭
+    A->>A: 停止准入 / 拒绝新任务
+    A->>E: shutdown()
+    E->>T: 等待宽限期内完成
+    alt 宽限期内未完成
+        E->>T: interrupt / cancel(true)
+    end
+    T-->>E: 释放许可、记录唯一终态
+    E-->>C: 终止结果（有界时间内）
 ```
 
-I should be technically strict: first separate correctness, safety, liveness, performance, and maintainability; then give the least explicit help that moves you forward.
+**审查问题：**Java 为什么不能安全强杀任意线程？捕获 `InterruptedException` 后代码应做什么？取消调用方等待与停止底层工作有何区别？完成与超时竞争时谁拥有最终状态？为什么“重试三次”不是正确性策略？查询取消和 Flink Job/Operator 取消如何依赖协作边界？
+
+**验收：**协作任务在文档化上限内停止；坏任务被诊断且不会无限挂住测试进程；Future/错误可保留、可观察；每条退出路径都释放租户许可和其他资源；重试资格显式化，实际重试推迟至第 16 周；关闭策略先写后实现。
+
+### 第 8 周——活性、压力测试与首份性能证据
+
+**工程问题：**服务在常规测试下正确，但可能死锁、饿死某租户或在竞争下崩溃。你需要区分正确性与性能的证据。
+
+**概念：**死锁、活锁、饥饿、公平性；Coffman 死锁条件；锁顺序与开放调用；压力测试与确定性协调；线程转储及 blocked/waiting 状态；吞吐、延迟分位数、排队等待、拒绝率；预热和测量误差；竞争；缓存行与伪共享的概念；基准结果不是正确性证明。
+
+**实现任务：**构建 `QueryGateLoadScenario`，支持多个租户和可配置任务时长；记录提交、接纳、拒绝、成功、失败、取消数；记录排队等待和执行时长分布；只改变一个变量，比较故意高竞争设计与较低竞争设计；加入一个小 jcstress 测试（第 2 或第 3 周原语）或反复双参与者压力工具。对账不变量通过前不得调优。
+
+**调试练习：**在仅测试的实验中创建双锁死锁；捕获线程转储并识别所有者和等待者；用全局锁顺序或消除嵌套获取修正；描述一个活锁例子和一个饥饿场景；检查全局指标锁是否成为竞争点。
+
+**预期输出：**不变量对账报告；一份带标注的线程转储；吞吐、p50/p95 延迟、排队等待、拒绝数的小负载表；前后竞争比较及限制；将伪共享联系到频繁更新计数器的一段解释；第 2 月检查点记录。
+
+**验收：**负载下所有记账等式成立；从证据而非猜测诊断故意死锁；修正后的生产路径采用有文档锁顺序或避免嵌套锁；性能结果包含工作负载、机器/JDK、预热局限且不夸大；能分别解释 `QueryGate` 的安全性、活性、性能与可维护性。
+
+### 第 2 月检查点
+
+通过阶段 I 的标准：能画出完整 `QueryGate` 共享状态图；为每把锁、原子变量、信号量、队列、并发集合辩护；演示有界过载行为；取消并关闭协作任务且不泄漏许可；暴露异步异常；由线程转储诊断测试死锁；解释测试提供证据但不是数学证明；30 分钟内从空文件重写一个中心组件。若状态机、有界性或关闭失败，先重复集成周再进入运行时主题。
 
 ---
 
-## 9. Lightweight Algorithm-Interview Track
-
-Do exactly **one 20-minute problem per week**. On checkpoint weeks, redo a prior problem from a blank editor instead of adding a new one. This is the smallest useful sustainable dose.
-
-### Twenty-minute protocol
-
-1. **2 minutes:** restate inputs, outputs, constraints, and examples.
-2. **4 minutes:** name the brute-force approach and target pattern.
-3. **10 minutes:** implement without AI or autocomplete-generated logic.
-4. **4 minutes:** test edge cases and state time/space complexity.
+## 7. 第 9–24 周：具体练习与交付物
 
-If unfinished, stop at 20 minutes, record where reasoning broke, study the missing idea after the core session, and redo it on the next checkpoint week. Do not turn one problem into a two-hour contest.
+这些周仍以项目为导向，但刻意比阶段 I 少规定细节。每周仍采用设计 → 实现 → 测试 → 解释闭环。
 
-### Weekly sequence
+### 第 9 周——进程、线程、调度与阻塞
 
-| Week | Pattern / problem |
-|---:|---|
-| 1 | Arrays + hash map: Two Sum |
-| 2 | Stack: Valid Parentheses |
-| 3 | Binary search: first occurrence in sorted array |
-| 4 | Redo the weakest of Weeks 1–3 from blank |
-| 5 | Sliding window: longest substring without repeating characters |
-| 6 | Heap: top K frequent elements |
-| 7 | Linked list: reverse a linked list |
-| 8 | Redo the weakest of Weeks 5–7 |
-| 9 | Two pointers: remove duplicates or sorted two-sum |
-| 10 | Tree BFS: level-order traversal |
-| 11 | Tree DFS: maximum depth and explain recursion stack |
-| 12 | Redo the weakest of Weeks 9–11 |
-| 13 | Graph/grid DFS or BFS: number of islands |
-| 14 | Intervals: merge intervals |
-| 15 | Heap: merge K sorted streams/lists, with a small K |
-| 16 | Redo the weakest of Weeks 13–15 |
-| 17 | Backtracking: subsets |
-| 18 | Basic DP: climbing stairs, then state the recurrence |
-| 19 | Linked-list cycle detection |
-| 20 | Redo the weakest of Weeks 17–19 |
-| 21 | Monotonic stack: daily temperatures |
-| 22 | Binary search: rotated sorted array |
-| 23 | Queue/hash map design: small LRU cache design; implementation may remain partial at 20 minutes |
-| 24 | Randomly select and solve one previous problem under a 20-minute recording |
-
-### Interview evidence
+**问题：**为什么增加 Worker 数反而可能降低吞吐？
 
-Maintain one page with:
+**工作：**在 CPU 密集、sleep、锁阻塞、队列等待的任务下，用线程转储观察 `QueryGate`。记录线程状态，并关联可运行工作、上下文切换和 CPU 核数。使用机器上可得的 OS 观察工具，但不开始内核学习。
 
-- pattern;
-- recognition signal;
-- invariant;
-- common edge cases;
-- time/space complexity;
-- date first solved;
-- date re-solved from blank.
-
-Success after six months is not “24 solved problems.” It is being able to recognize and independently implement the core patterns represented here under a modest time limit.
-
----
-
-## 10. Measuring True Understanding
-
-### The evidence ladder
-
-A topic is not learned because it sounds familiar. Use five levels:
-
-| Level | Evidence |
-|---:|---|
-| 0. Recognition | You recognize terms when prompted |
-| 1. Explanation | You can explain the mechanism in your own words |
-| 2. Construction | You can implement the central idea from a blank file |
-| 3. Adversarial proof | You can state invariants and create tests that expose broken variants |
-| 4. Transfer | You can apply the concept to a changed query, streaming, or production scenario |
+**交付：**`docs/runtime-observations.md`，包括四类工作负载、预测行为、观测线程状态和一次 Worker 数实验。
 
-Core concurrency topics require Level 3 before moving on. The phase as a whole requires at least Level 4 for bounded execution, cancellation, and backpressure.
+**验收：**能区分进程资源和线程资源、可运行与正在运行、阻塞与等待、并发与并行。
 
-### Weekly scorecard
+### 第 10 周——JVM 内存、分配、GC 与安全点
 
-Score each dimension 0–3:
+**问题：**工作负载存在延迟尖刺，但没有明显锁竞争。
 
-- **Correctness:** Does the implementation meet its invariant under adversarial interleavings?
-- **Mechanism:** Can you explain why it works in JMM/API terms?
-- **Implementation:** Can you write the core without generation?
-- **Debugging:** Can you use evidence to locate a seeded defect?
-- **Transfer:** Can you connect it to query/streaming/data infrastructure?
+**工作：**创建高分配任务及倾向复用的对照版本。采集短时 Java Flight Recorder（JFR）档案。识别分配率、一次 GC 暂停观察、热点方法和线程活动；不调优垃圾收集器。
 
-A topic passes at **12/15**, with no score below 2 for correctness or mechanism.
+**交付：**一张带注释的 JFR 截图或文本摘要，以及假设/证据表。
 
-### Required proof questions for every concurrent component
+**验收：**能解释栈、堆、对象生命周期、分配压力、GC 暂停与应用锁暂停的区别，以及一次录制不是普遍证据的原因。
 
-1. What state is shared?
-2. What is the invariant?
-3. What operation is the linearization point, if applicable?
-4. What establishes visibility?
-5. Can any operation block, and for how long?
-6. What happens on interruption or exception?
-7. Can resources leak?
-8. What is bounded?
-9. How does it shut down?
-10. What test would fail if the synchronization were removed?
+### 第 11 周——远程调用、TCP 直觉与超时预算
 
-### Spaced re-check
+**问题：**“查询”调用一个模拟远程服务，它可能慢、不可用或只返回部分进展。
 
-One week after learning a primitive, re-create its essential mechanism for 10 minutes without notes. One month later, explain it through a different component. If you cannot, lower the topic’s evidence level rather than protecting an optimistic score.
+**工作：**增加 `RemoteStage` 抽象，区分连接/建立超时和执行/读取超时；必要时仅模拟，无须真实服务器。把单个端到端截止时间贯穿排队等待和执行。测试慢响应、无响应、调用方超时后的延迟成功。
 
----
+**交付：**超时预算图，以及证明队列时间会减少剩余执行时间的测试。
 
-## 11. Monthly Checkpoints and Adjustment Rules
-
-### Checkpoint format
-
-At Weeks 4, 8, 12, 16, 20, and 24:
-
-1. run the project tests;
-2. reimplement one old mechanism from blank;
-3. debug one seeded or deliberately reintroduced bug;
-4. explain one production connection;
-5. update the scorecard and next month’s risk.
-
-### Adjustment rules
-
-- **If less than 70% of acceptance criteria pass:** repeat one integration week. Add no new topic.
-- **If one core invariant fails:** stop feature work until it is repaired.
-- **If two sessions overrun:** reduce the next milestone’s feature scope; do not add study hours.
-- **If implementation passes but explanation fails:** do a trace/interleaving exercise, not more coding.
-- **If explanation passes but blank-file implementation fails:** repeat a smaller implementation without AI.
-- **If all work feels easy for two checkpoints:** increase adversarial conditions or change one constraint; do not add another technology.
-- **If work or health interrupts the plan:** preserve the last passing checkpoint, write the next exact action, and resume there.
-- **If the algorithm track repeatedly consumes more than 20 minutes:** replace new problems with pattern redos until fluency improves.
-- **If project abstractions multiply:** remove a feature and restore a visible execution path from submission to terminal state.
-
-### Monthly mentor review questions
-
-- What can you now implement that you could not implement one month ago?
-- Which claim is supported by a test or measurement?
-- Which component is still “borrowed, not learned”?
-- What failure surprised you?
-- What should be removed from next month?
-- Where does the project connect to your real work or open-source experience?
-
----
-
-## 12. Topics to Deliberately Postpone
-
-These are valuable, but they have lower return during this 48-hour plan:
-
-- virtual threads, structured concurrency, and reactive frameworks until platform-thread semantics are solid;
-- Netty internals and building a high-performance network server;
-- advanced lock-free queues, hazard pointers, and custom synchronizers;
-- deep CPU cache-coherence protocols or assembly-level JIT analysis;
-- choosing and tuning every JVM garbage collector;
-- full operating-system, computer-architecture, or networking courses;
-- implementing a SQL parser, cost-based optimizer, storage engine, or transaction manager;
-- full Flink source-code study or building a miniature Flink;
-- Kubernetes, service mesh, and cloud-certification tracks;
-- vector-database internals, embedding-model training, and rapid RAG-framework churn;
-- generic agent orchestration and prompt-engineering courses;
-- learning Rust, Go, Scala, or another implementation language during this plan;
-- competitive-programming problem volume;
-- advanced dynamic programming, graph theory, or formal verification;
-- a polished web UI for `QueryGate`.
-
-When distracted by a topic, put it in a parking-lot note. It enters the plan only if a current acceptance criterion requires it.
-
----
-
-## 13. Recommended Resources
-
-Do not read any of these from beginning to end. Use only the sections demanded by the current exercise.
-
-### Phase I, Weeks 1–8: Java concurrency
-
-- **Primary:** Brian Goetz et al., [*Java Concurrency in Practice*](https://www.informit.com/store/java-concurrency-in-practice-9780321349606). Use selected material on thread safety, sharing objects, task execution, cancellation, liveness, and performance.
-- **Supplementary:** [Official Java SE documentation](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/package-summary.html), especially JLS Chapter 17 and `java.util.concurrent`. Use the linked official documentation to navigate to the precise API or specification section demanded by the exercise.
-
-### Phase II, Weeks 9–16: Runtime and data-system execution
-
-- **Primary:** [*Operating Systems: Three Easy Pieces*](https://research.cs.wisc.edu/wind/OSTEP/). Select only processes, threads, scheduling, condition variables, and limited memory/I/O sections.
-- **Supplementary:** [CMU 15-445/645](https://15445.courses.cs.cmu.edu/spring2026/syllabus.html) selected notes or lectures on query execution and parallel execution. Do not attempt the full course or projects.
-
-### Phase III, Weeks 17–24: Reliable data and data-for-AI
-
-- **Primary:** Martin Kleppmann and Chris Riccomini, [*Designing Data-Intensive Applications*, second edition](https://www.oreilly.com/library/view/designing-data-intensive-applications/9781098119058/). Select sections on encoding/schema, replication/streams, consistency, batch/stream processing, and trustworthy systems as the project requires.
-- **Supplementary:** Your own project evidence plus official documentation for the specific Java/JVM tool being used. This is intentionally not another course.
-
-The algorithm track has no separate primary resource. The 24 prompts and your pattern notebook are enough for this phase.
-
----
-
-## 14. Expected Skills and Portfolio Evidence After Six Months
-
-### Skills you should possess
-
-You should be able to:
-
-- explain Java concurrency from shared-memory first principles;
-- reason with happens-before rather than folklore;
-- choose among `synchronized`, `volatile`, atomics, explicit locks, semaphores, and concurrent collections;
-- implement and test bounded producer-consumer components;
-- configure a bounded executor and defend its overload behavior;
-- design a task state machine with one terminal outcome;
-- propagate cancellation, deadlines, interruptions, and asynchronous failures;
-- define safe retry and idempotency boundaries;
-- detect permit/resource leaks;
-- diagnose deadlock and contention using thread dumps and runtime evidence;
-- make a limited, honest performance measurement;
-- explain tenant isolation, fairness, queueing, and backpressure;
-- connect inter-query execution, CDC lag, and context-building workloads to the same execution principles;
-- enforce deterministic permissions, freshness, provenance, and query boundaries before AI reasoning;
-- solve and explain the core interview patterns in the lightweight track;
-- use AI as a reviewer and mentor without surrendering code ownership.
-
-### Portfolio evidence
-
-Your repository should contain:
-
-- a working Java 21 `QueryGate` project;
-- unit, coordinated-concurrency, stress, and fault-injection tests;
-- a bounded queue learning implementation and a production path using standard concurrency utilities;
-- a task registry and explicit state machine;
-- bounded executor, tenant limiter, fair scheduler, cancellation, timeout, retry, and shutdown behavior;
-- simulated query, CDC, and permission-aware context workloads;
-- reconciled metrics and trace examples;
-- one annotated deadlock/thread-dump investigation;
-- one JFR observation;
-- one careful microbenchmark;
-- one capacity/load report with limitations;
-- invariant, architecture, failure-model, and benchmark documents;
-- several short architectural decision records;
-- one injected-incident report;
-- a final technical defense recording or notes;
-- an algorithm-pattern notebook with spaced redos.
-
-### What this evidence should let you say in an interview
-
-Not:
-
-> “I learned many concurrency APIs.”
-
-But:
-
-> “I built and defended a bounded multi-tenant execution service. I can show its task-state invariants, happens-before relationships, overload and shutdown policies, cancellation races, fairness trade-offs, fault tests, and capacity measurements. I then used the same execution model for simulated query, CDC, and permission-aware context workloads.”
-
-That is a coherent engineering story grounded in independently produced evidence.
-
----
-
-## 15. Starting the Mentorship: Your First Submission
-
-Do not implement Week 1 yet. First send the following design:
-
-```text
-Week 1: Completion counter
-
-1. What data is shared?
-2. What is the exact correctness invariant?
-3. What interleaving can violate it?
-4. How will the main thread know all workers finished?
-5. How will the test increase the probability of contention?
-6. Which outcomes would and would not prove correctness?
-7. What is your proposed class/API shape?
-8. Assistance level requested: 0 or 1
+```mermaid
+flowchart LR
+    D[端到端 Deadline] --> Q[排队等待预算]
+    Q --> R[剩余执行预算]
+    R --> C[连接 / 建立超时]
+    R --> E[读取 / 执行超时]
+    Q -->|等待过久| TO[超时：不进入执行]
+    R -->|预算耗尽| TO
 ```
 
-The first mentor review should challenge the design and test strategy without giving you the implementation.
+**验收：**能解释重试为何放大负载、调用方超时为何不自动取消远程工作、TCP 连接/读取/应用截止时间为何是不同关注点。
+
+### 第 12 周——重新审视度量、竞争与伪共享
+
+**问题：**判断全局计数器/锁是否是真正瓶颈。
+
+**工作：**为一个孤立问题创建最小 JMH 基准，例如在不同竞争下比较 `AtomicLong` 与 `LongAdder`。包含预热和多 fork；仅为调查已测行为时才可选地检查对象布局或填充。
+
+**交付：**`docs/benchmark-report.md`，含问题、假设、设置、结果、限制、决策；完成第 3 月检查点。
+
+**验收：**能区分微基准结果和端到端容量；当项目正确性语义不同，不盲目采用“赢家”。
+
+### 第 3 月检查点
+
+- 用至少两个竞争性假设和证据解释一次延迟尖刺。
+- 解读线程转储和小型 JFR 录制。
+- 解释 CPU 密集和 I/O 密集线程池为何有不同容量压力。
+- 让一个截止时间穿过队列与执行。
+- 为一个基准结论辩护而不夸大。
+
+运行时工具消耗太多时间时，保留一个录制样例后继续；工具熟练度不是目标。
+
+### 第 13 周——查询执行流水线
+
+**问题：**一个查询包含 scan、filter、aggregate 阶段，具有不同阻塞和 CPU 行为。
+
+**工作：**将有限查询建模为三阶段任务或小 DAG。记录各阶段耗时，区分查询间并发和查询内并行。数据在内存生成；不实现 SQL 解析或存储。
+
+**交付：**一张执行图和可运行的 `SimulatedQueryPlan`。
+
+**验收：**能解释流水线与阻塞阶段、为何每阶段加线程会过度订阅机器、背压应位于何处。
+
+### 第 14 周——公平的多租户调度
+
+**问题：**一个租户填满 FIFO 队列，另一个租户的小任务被其全部工作挡在后面。
+
+**工作：**实现最简单的隔离改进：每租户队列加轮询选择。保持全局和每租户有界；定义租户限额不等时的行为。
+
+**交付：**按租户展示排队等待的前后工作负载，以及解释公平/吞吐取舍的 ADR。
+
+**验收：**任何租户均不超限；队列内存保持有界；在已文档化假设下，持续活跃租户不能无限饿死另一活跃租户。
+
+### 第 15 周——流式生产者与背压
+
+**问题：**CDC 生产者产生事件快于消费者应用事件。
+
+**工作：**增加限速 `CdcWorkload`。跟踪已生产位置、已接纳位置、已处理位置、队列延迟、拒绝/阻塞时间。概念上比较阻塞、拒绝、减慢生产者策略，只实现其中一种。
+
+**交付：**延迟随时间表或图，以及策略说明。
+
+**验收：**能解释缓冲只是延迟而非消除过载，并关联队列容量、吞吐失配、延迟和恢复时间。
+
+### 第 16 周——交付语义、幂等性与去重
+
+**问题：**任务可能完成副作用后，在确认完成前失败。
+
+**工作：**向一个模拟 CDC apply 或元数据更新路径加入幂等键。在副作用前、后以及确认后注入失败。实现小型有界去重记录或确定性 upsert 规则。
+
+**交付：**故障点表，映射每种失败到重试结果和重复风险；完成第 4 月检查点。
+
+**验收：**能区分执行、确认、持久副作用、重试、最终提交；不在未定义边界和持久状态的情况下声称“恰好一次”。
+
+### 第 4 月检查点
+
+- 用自己的代码解释查询间与查询内并发。
+- 在可复现负载下演示租户公平性提升。
+- 定量解释流式积压。
+- 展示哪些失败使重试安全或不安全。
+- 将项目关联到你见过的一个真实 Flink/CDC 或查询引擎事故模式。
+
+调度代码若变复杂，删除权重和优先级；保持有界轮询和可理解不变量。
+
+### 第 17 周——面向 AI 的确定性上下文规划
+
+**问题：**Agent 请求上下文，但必须在语义推理之前确定性地解析权限和所需源。
+
+**工作：**加入 `ContextRequest`、`ContextPlan`、`ContextTask`。确定性规划器选择被授权的结构化数据、元数据、模拟文档。权限拒绝在检索工作进入执行器之前发生。
+
+**交付：**上下文计划 schema 和证明禁止源绝不被调度的测试。
+
+**验收：**权限执行不委托给 LLM，每个被选源都有明确理由与身份。
+
+### 第 18 周——新鲜度、版本与 CDC 驱动上下文
+
+**问题：**答案使用的上下文内部一致，但已过期。
+
+**工作：**为上下文结果附加源版本、schema 版本、事件位置和观测时间。模拟快照加 CDC 更新。定义新鲜度要求，并拒绝或标注不满足的结果。
+
+**交付：**溯源记录和覆盖更新竞态的新鲜度测试。
+
+**验收：**能区分事件时间、处理/观测时间、持久源位置和“对此请求足够新鲜”。
+
+### 第 19 周——指标、Trace 与服务等级目标
+
+**问题：**整体延迟看似健康，但一个租户却有排队饥饿和超时。
+
+**工作：**加入 Trace ID 和结构化生命周期事件。报告排队等待、执行延迟、端到端延迟、结果、重试数、租户。为模拟器定义两个适度的 SLO 风格目标。
+
+**交付：**一个 Trace 叙事和每租户负载报告。
+
+**验收：**指标与任务状态可对账；维度有界；排队等待独立于执行；日志保留单个任务因果链。
+
+### 第 20 周——故障注入活动
+
+**问题：**在过载和部分失败下验证系统，而不只验证正常路径。
+
+**工作：**对饱和、慢任务、抛出异常、尝试泄漏许可、忽略中断、可重试失败、不可重试副作用、负载中关闭构成小矩阵。
+
+**交付：**`docs/failure-model.md`，逐项记录预期结果、实际结果、证据和修复；完成第 5 月检查点。
+
+**验收：**没有故障被静默吞没；每次有界测试后不变量可对账；已知不协作任务被如实报告。
+
+### 第 5 月检查点
+
+- 演示“权限先于检索”。
+- 为一个上下文结果追踪新鲜度和溯源。
+- 诊断一次租户专属 SLO 失败。
+- 不依赖人工时序猜测地运行故障矩阵。
+- 解释哪些系统决策是确定性的，哪些可合理使用 AI 协助。
+
+若上下文层削弱执行器清晰度，就把它保留为薄的强类型工作负载。不要构建 embedding、向量库或 Agent 框架。
+
+### 第 21 周——正确性审计与简化
+
+**问题：**功能积累速度快于正确性证明。
+
+**工作：**审计每个共享字段和状态迁移。删除冗余原子变量、锁、指标或抽象。写出状态、所有者、同步策略和不变量表。
+
+**交付：**`docs/invariants.md` 和至少一次简化提交。
+
+**验收：**每个可变共享字段都有已文档化策略；没有锁只因“线程安全”而存在；终态和关闭的所有权仍无歧义。
+
+### 第 22 周——容量曲线与一次有依据的优化
+
+**问题：**为一个声明的工作负载找出饱和点与主导瓶颈。
+
+**工作：**在多种并发度下运行同一负载。记录吞吐、p95 延迟、排队等待、拒绝、CPU 行为和租户分布。最多做一次优化后重跑。
+
+**交付：**容量表、瓶颈假设、证据、变更与前后结果。
+
+**验收：**测试具备支持狭窄结论的可复现性；拒绝任何以破坏公平或正确性换取吞吐的改动。
+
+### 第 23 周——作品集级设计与事故文档
+
+**问题：**让未看过构建过程的审阅者也能读懂工程工作。
+
+**工作：**编写架构与组件职责；关键不变量和 happens-before 论证；过载、重试、关闭策略；三个被拒绝方案；一个来自注入失败的简短事故报告；基准限制；查询、流式与面向 AI 数据的关联。
+
+**交付：**完整 `README.md`、`docs/architecture.md` 和一份事故报告。
+
+**验收：**每项主要主张都链接到代码、测试或度量证据；删去任何可描述任意项目的泛泛主张。
+
+### 第 24 周——最终技术答辩与发布
+
+**问题：**证明知识属于你，而不只是存在于仓库中。
+
+**工作：**1）从空文件重写一个有界状态迁移或小型阻塞组件；2）调试一个此前未见的植入并发 bug；3）录制 15 分钟架构说明；4）回答下方答辩问题；5）打 `v1.0` 标签或以其他方式记录版本。
+
+**最终答辩问题：**最重要的三个不变量是什么？关键 happens-before 边在哪？什么有界、什么仍可能增长？谁拥有取消和终态？异步失败如何暴露？调用方观察到什么过载策略？租户如何被饿死？哪些重试安全及其原因？真实查询引擎或 Flink 算子内部会如何不同？哪些确定性边界使服务适合 AI 上下文交付？
+
+**交付：**最终演示、答辩录制/笔记、发布提交和下一阶段六个月的差距评估。
+
+**验收：**无需请求 AI 生成解释，即可从代码和证据回答。
+
+---
+
+## 8. AI 协助规则
+
+AI 是导师、审阅者、对抗测试者和文档导航员；它不是核心练习的首位实现者。
+
+### 协助阶梯
+
+对核心练习，按顺序经过以下级别：
+
+| 级别 | AI 可以做什么 |
+|---:|---|
+| 0 | 前 20 分钟不用 AI：写问题模型、共享状态、不变量、建议 API |
+| 1 | 提苏格拉底式问题并识别遗漏关注点；不给代码或伪代码 |
+| 2 | 给出一个局部概念提示，或指向一个相关 API/文档章节 |
+| 3 | 为困难片段给伪代码，不给可编译类 |
+| 4 | 审阅你的可编译尝试，指出缺陷并建议最小修改，不重写 |
+| 5 | 验收后提供参考实现供比较 |
+
+第一次尝试失败时，不要从级别 0 直接跳到级别 4。
+
+### 从一开始就允许的行为
+
+- 询问术语澄清；
+- 询问官方文档位置；
+- 请 AI 测验你；
+- 请 AI 审查设计但不产出代码；
+- 在你写完初始测试计划后，请 AI 提出对抗性场景；
+- 先自行阅读并形成假设后，请 AI 解释编译错误。
+
+### 核心实现期间受限的行为
+
+- 首次可编译尝试前不生成完整类；
+- 不复制无法逐行解释的代码；
+- 不让 AI“修复所有测试”；
+- 不因某原语看似可用就直接接受它；
+- 不把 AI 写的设计说明当作自己的提交；
+- 在找到最小失败不变量之前不做大范围重构。
+
+### 任意 AI 协助代码的所有权测试
+
+只有能够做到以下各项，代码才算属于你：解释每个共享字段和同步操作；预测删除锁、`volatile`、CAS 或中断检查后的行为；写出对抗测试；无需再生成即可为变更需求修改代码；一周后从空文件重建中心机制。做不到时，将组件标记为“借来的，尚未学会”，然后重新学习。
+
+### 与我作为导师沟通的提示词格式
+
+```text
+问题：
+我的不变量：
+共享可变状态：
+建议同步方案：
+故障与关闭行为：
+我已尝试的内容：
+证据：
+请求的协助级别（1-5）：
+```
+
+我应在技术上严格：先区分正确性、安全性、活性、性能、可维护性；再给出足以推动你前进的最少明确帮助。
+
+---
+
+## 9. 轻量算法面试轨道
+
+每周严格做 **一道 20 分钟题**。检查点周从空编辑器重做旧题，而不是新增题。这是最小但可持续的有效剂量。
+
+### 二十分钟流程
+
+1. **2 分钟：**复述输入、输出、约束和样例。
+2. **4 分钟：**说出暴力解法与目标模式。
+3. **10 分钟：**不用 AI 或自动补全生成逻辑地实现。
+4. **4 分钟：**测试边界并说明时间/空间复杂度。
+
+未完成也在 20 分钟停止，记录推理断点；核心会话后学习缺失思路，在下一个检查点周重做。不要把一道题变成两小时竞赛。
+
+### 每周序列
+
+| 周次 | 模式 / 题目 |
+|---:|---|
+| 1 | 数组 + 哈希表：Two Sum |
+| 2 | 栈：Valid Parentheses |
+| 3 | 二分：有序数组中的首次出现 |
+| 4 | 从空白重做第 1–3 周中最弱题 |
+| 5 | 滑动窗口：无重复字符的最长子串 |
+| 6 | 堆：前 K 个高频元素 |
+| 7 | 链表：反转链表 |
+| 8 | 重做第 5–7 周中最弱题 |
+| 9 | 双指针：去重或有序数组 Two Sum |
+| 10 | 树 BFS：层序遍历 |
+| 11 | 树 DFS：最大深度并解释递归栈 |
+| 12 | 重做第 9–11 周中最弱题 |
+| 13 | 图/网格 DFS 或 BFS：岛屿数量 |
+| 14 | 区间：合并区间 |
+| 15 | 堆：合并 K 个有序流/链表（小 K） |
+| 16 | 重做第 13–15 周中最弱题 |
+| 17 | 回溯：子集 |
+| 18 | 基础 DP：爬楼梯，并说明递推式 |
+| 19 | 链表环检测 |
+| 20 | 重做第 17–19 周中最弱题 |
+| 21 | 单调栈：每日温度 |
+| 22 | 二分：旋转排序数组 |
+| 23 | 队列/哈希表设计：小型 LRU 缓存设计；20 分钟内可只完成部分实现 |
+| 24 | 随机选择并录制 20 分钟内解决一道旧题 |
+
+### 面试证据
+
+维护一页记录：模式、识别信号、不变量、常见边界、时间/空间复杂度、首次解决日期、从空白重解日期。
+
+六个月后的成功不是“解决 24 道题”，而是在适度时间限制下识别并独立实现此处代表的核心模式。
+
+---
+
+## 10. 衡量真实理解
+
+### 证据阶梯
+
+主题不是因为听起来熟悉就算学会。使用五级：
+
+| 级别 | 证据 |
+|---:|---|
+| 0. 识别 | 被提示时能识别术语 |
+| 1. 解释 | 能用自己的话解释机制 |
+| 2. 构建 | 能从空文件实现中心思想 |
+| 3. 对抗性证明 | 能陈述不变量并创建暴露错误变体的测试 |
+| 4. 迁移 | 能将概念用于变化后的查询、流式或生产场景 |
+
+核心并发主题必须达到级别 3 后才前进。整体阶段对有界执行、取消、背压至少需要级别 4。
+
+### 每周评分卡
+
+每个维度 0–3 分：
+
+- **正确性：**实现是否在对抗性交错下满足不变量？
+- **机制：**能否用 JMM/API 术语解释为何有效？
+- **实现：**能否不依赖生成写出核心？
+- **调试：**能否用证据定位植入缺陷？
+- **迁移：**能否关联查询/流式/数据基础设施？
+
+主题以 **12/15** 通过；正确性和机制任一不得低于 2。
+
+### 每个并发组件的必答证明问题
+
+1. 共享什么状态？
+2. 不变量是什么？
+3. 若适用，哪个操作是线性化点？
+4. 什么建立可见性？
+5. 是否有操作阻塞，阻塞多久？
+6. 中断或异常时发生什么？
+7. 资源是否可能泄漏？
+8. 什么是有界的？
+9. 如何关闭？
+10. 删除同步后哪个测试会失败？
+
+### 间隔复查
+
+学习一个原语一周后，不看笔记用 10 分钟重建其核心机制。一月后用不同组件解释它。若做不到，降低该主题的证据级别，而非维持乐观评分。
+
+---
+
+## 11. 每月检查点与调整规则
+
+### 检查点格式
+
+在第 4、8、12、16、20、24 周：运行项目测试；从空白重写一个旧机制；调试一个植入或故意重新引入的 bug；解释一个生产关联；更新评分卡和下月风险。
+
+### 调整规则
+
+- **验收标准通过不足 70%：**重复一个集成周，不新增主题。
+- **一个核心不变量失败：**修复前停止功能工作。
+- **两个会话超时：**缩小下个里程碑功能范围，不增加学习时长。
+- **实现通过、解释失败：**做 trace/交错练习，不加更多代码。
+- **解释通过、空白实现失败：**不用 AI 重做更小实现。
+- **连续两个检查点都很轻松：**增加对抗条件或修改一个约束，不增加另一项技术。
+- **工作或健康中断：**保留最后一个通过检查点，写下下一精确动作，从那里恢复。
+- **算法轨道反复超过 20 分钟：**用模式重做替代新题，直到流畅度提高。
+- **项目抽象增殖：**删除一个功能，恢复从提交到终态的可见执行路径。
+
+### 月度导师审查问题
+
+- 现在能实现什么一个月前不能实现的内容？
+- 哪个主张由测试或度量支持？
+- 哪个组件仍是“借来的，尚未学会”？
+- 哪个故障让你意外？
+- 下个月应删除什么？
+- 项目在哪里连接到真实工作或开源经验？
+
+---
+
+## 12. 有意延后的主题
+
+这些主题有价值，但在这 48 小时计划中的回报较低：
+
+- 平台线程语义扎实前的虚拟线程、结构化并发、响应式框架；
+- Netty 内部机制和高性能网络服务器；
+- 高级无锁队列、hazard pointer、自定义同步器；
+- 深入 CPU 缓存一致性协议或汇编级 JIT 分析；
+- 选择并调优每一种 JVM GC；
+- 完整 OS、计算机体系结构或网络课程；
+- SQL 解析器、基于成本优化器、存储引擎、事务管理器；
+- 完整 Flink 源码学习或迷你 Flink；
+- Kubernetes、服务网格、云认证路线；
+- 向量数据库内部、embedding 模型训练、快速变化的 RAG 框架；
+- 通用 Agent 编排和提示工程课程；
+- 本计划期间学习 Rust、Go、Scala 或其他实现语言；
+- 竞赛编程题量；
+- 高级动态规划、图论、形式化验证；
+- 为 `QueryGate` 制作精致 Web UI。
+
+被主题分心时，把它记入“停车场”笔记。只有当前验收标准需要它时才进入计划。
+
+---
+
+## 13. 推荐资源
+
+不要从头到尾读完任何一本。只使用当前练习所需章节。
+
+### 阶段 I，第 1–8 周：Java 并发
+
+- **主要资源：**Brian Goetz 等，[《Java Concurrency in Practice》](https://www.informit.com/store/java-concurrency-in-practice-9780321349606)。选择线程安全、对象共享、任务执行、取消、活性、性能相关内容。
+- **补充资源：**[Java SE 官方文档](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/package-summary.html)，尤其是 JLS 第 17 章和 `java.util.concurrent`。从官方文档导航到练习所需的精确 API 或规范章节。
+
+### 阶段 II，第 9–16 周：运行时与数据系统执行
+
+- **主要资源：**[*Operating Systems: Three Easy Pieces*](https://research.cs.wisc.edu/wind/OSTEP/)。只选进程、线程、调度、条件变量及有限内存/I/O 章节。
+- **补充资源：**[CMU 15-445/645](https://15445.courses.cs.cmu.edu/spring2026/syllabus.html) 中查询执行和并行执行的选读笔记/课程。不要尝试完整课程或项目。
+
+### 阶段 III，第 17–24 周：可靠数据与面向 AI 的数据
+
+- **主要资源：**Martin Kleppmann、Chris Riccomini，[《Designing Data-Intensive Applications》第二版](https://www.oreilly.com/library/view/designing-data-intensive-applications/9781098119058/)。按项目需要选择编码/schema、复制/流、数据一致性、批流处理、可信系统章节。
+- **补充资源：**你自己的项目证据，以及所用具体 Java/JVM 工具的官方文档；这刻意不是另一门课程。
+
+算法轨道不设独立主要资源；24 个题目和模式笔记在本阶段足够。
+
+---
+
+## 14. 六个月后的预期能力与作品集证据
+
+### 应具备的能力
+
+你应能够：
+
+- 从共享内存第一原则解释 Java 并发；
+- 使用 happens-before 而不是经验传言进行推理；
+- 在 `synchronized`、`volatile`、原子变量、显式锁、信号量、并发集合间选择；
+- 实现并测试有界生产者-消费者组件；
+- 配置有界执行器并为其过载行为辩护；
+- 设计具有单一终态的任务状态机；
+- 传播取消、截止时间、中断和异步失败；
+- 定义安全的重试和幂等边界；
+- 发现许可/资源泄漏；
+- 用线程转储和运行时证据诊断死锁与竞争；
+- 做有限且诚实的性能度量；
+- 解释租户隔离、公平性、排队和背压；
+- 将查询间执行、CDC 延迟和上下文构建负载连接到相同执行原则；
+- 在 AI 推理前强制确定性权限、新鲜度、溯源和查询边界；
+- 解决并解释轻量轨道中的核心面试模式；
+- 将 AI 用作审阅者和导师，而不放弃代码所有权。
+
+### 作品集证据
+
+仓库应包含：可运行的 Java 21 `QueryGate`；单测、协调并发、压力和故障注入测试；有界队列教学实现及使用标准并发工具的生产路径；任务注册表和显式状态机；有界执行器、租户限制器、公平调度、取消、超时、重试、关闭行为；模拟查询、CDC、权限感知上下文负载；可对账指标和 Trace 示例；一份带标注的死锁/线程转储调查；一次 JFR 观察；一个严谨微基准；一份说明限制的容量/负载报告；不变量、架构、故障模型、基准文档；若干 ADR；一份注入事故报告；最终技术答辩录制或笔记；含间隔重做的算法模式笔记。
+
+### 这些证据应让你在面试中如何表述
+
+不要说：
+
+> “我学过许多并发 API。”
+
+而要说：
+
+> “我构建并答辩了一个有界多租户执行服务。我可以展示其任务状态不变量、happens-before 关系、过载与关闭策略、取消竞态、公平性取舍、故障测试和容量度量。之后我把同一执行模型用于模拟查询、CDC 和权限感知的上下文工作负载。”
+
+这是一个建立在独立产出证据之上的连贯工程故事。
+
+---
+
+## 15. 开始导师制：你的第一份提交
+
+暂时不要实现第 1 周。先发送以下设计：
+
+```text
+第 1 周：完成计数器
+
+1. 哪些数据是共享的？
+2. 精确的正确性不变量是什么？
+3. 哪种交错会违反它？
+4. 主线程如何知道所有 Worker 已完成？
+5. 测试如何提高竞争概率？
+6. 哪些结果能证明、哪些不能证明正确性？
+7. 你建议的类/API 形态是什么？
+8. 请求协助级别：0 或 1
+```
+
+第一次导师审查应挑战设计和测试策略，而不直接给出实现。
