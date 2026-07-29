@@ -3,6 +3,7 @@
   "name": "cloverdew-engineering-lab",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-07-29",
+  // Keep this file in hosted build archives so workerd provides Node built-ins.
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": ".open-next/assets",
