@@ -3,20 +3,20 @@ import Link from "next/link";
 import { ArrowIcon } from "@/components/icons";
 
 export const metadata: Metadata = {
-  title: "QueryGate project",
+  title: "QueryGate 项目",
   description:
-    "The cumulative multi-tenant execution system built throughout the learning track."
+    "贯穿整个学习路径构建的累积式多租户执行系统。"
 };
 
 const invariants = [
-  "Every accepted task is terminal or still discoverable.",
-  "A task reaches at most one terminal state.",
-  "Queue size never exceeds configured capacity.",
-  "Running tasks never exceed a tenant’s limit.",
-  "Rejected tasks never execute.",
-  "Overload, failure, timeout, and cancellation remain distinguishable.",
-  "Shutdown terminates cooperative work within a declared bound.",
-  "Only explicitly safe operations may be retried."
+  "每个已接纳的任务要么处于终态，要么仍可被发现。",
+  "一个任务至多到达一个终态。",
+  "队列大小绝不超过配置容量。",
+  "运行中的任务绝不超过租户限额。",
+  "被拒绝的任务绝不执行。",
+  "过载、失败、超时和取消始终可以区分。",
+  "关闭会在声明的上限内终止可协作停止的工作。",
+  "只有明确安全的操作才允许重试。"
 ];
 
 export default function ProjectPage() {
@@ -24,12 +24,11 @@ export default function ProjectPage() {
     <>
       <section className="page-hero project-hero">
         <div className="shell narrow">
-          <p className="eyebrow">The cumulative project</p>
+          <p className="eyebrow">累积项目</p>
           <h1>QueryGate</h1>
           <p>
-            A small multi-tenant execution service for simulated query, CDC,
-            and context-building tasks. It is not a database or a Flink clone.
-            It is one subsystem you can own completely.
+            一个用于模拟查询、CDC 与上下文构建任务的小型多租户执行服务。它不是
+            数据库，也不是 Flink 的克隆；它是一个你能完整负责的子系统。
           </p>
         </div>
       </section>
@@ -37,58 +36,58 @@ export default function ProjectPage() {
       <section className="section">
         <div className="shell project-grid">
           <div>
-            <p className="eyebrow">Execution path</p>
-            <h2>Make responsibility visible.</h2>
+            <p className="eyebrow">执行路径</p>
+            <h2>让责任边界看得见。</h2>
             <p className="section-copy">
-              The architecture stays deliberately legible. Each arrow creates
-              a question about ownership, capacity, failure, or visibility.
+              架构刻意保持清晰易读。每一条箭头都会引出一个关于所有权、容量、
+              失败或可见性的问题。
             </p>
           </div>
-          <div className="architecture" aria-label="QueryGate architecture">
+          <div className="architecture" aria-label="QueryGate 架构">
             <div className="arch-node accent">
-              <small>01 · submit</small>
-              <strong>AdmissionController</strong>
-              <span>global bound + tenant policy</span>
+              <small>01 · 提交</small>
+              <strong>准入控制器（AdmissionController）</strong>
+              <span>全局上限 + 租户策略</span>
             </div>
             <div className="arch-connector">
-              <span>accepted</span>
+              <span>已接纳</span>
               <i />
             </div>
             <div className="arch-split">
               <div className="arch-node">
-                <small>02 · wait</small>
-                <strong>Bounded queue</strong>
-                <span>backpressure + rejection</span>
+                <small>02 · 等待</small>
+                <strong>有界队列</strong>
+                <span>背压 + 拒绝</span>
               </div>
               <div className="arch-node">
-                <small>03 · isolate</small>
-                <strong>TenantLimiter</strong>
-                <span>permits + fairness</span>
+                <small>03 · 隔离</small>
+                <strong>租户限流器（TenantLimiter）</strong>
+                <span>许可 + 公平性</span>
               </div>
             </div>
             <div className="arch-connector">
-              <span>scheduled</span>
+              <span>已调度</span>
               <i />
             </div>
             <div className="arch-node">
-              <small>04 · execute</small>
-              <strong>WorkerExecutor</strong>
-              <span>deadline + cancellation + failure</span>
+              <small>04 · 执行</small>
+              <strong>工作执行器（WorkerExecutor）</strong>
+              <span>截止时间 + 取消 + 失败</span>
             </div>
             <div className="arch-connector">
-              <span>observed</span>
+              <span>已观测</span>
               <i />
             </div>
             <div className="arch-split">
               <div className="arch-node">
-                <small>05 · truth</small>
-                <strong>TaskRegistry</strong>
-                <span>one terminal outcome</span>
+                <small>05 · 真相</small>
+                <strong>任务登记簿（TaskRegistry）</strong>
+                <span>唯一终态结果</span>
               </div>
               <div className="arch-node">
-                <small>06 · evidence</small>
-                <strong>Metrics & traces</strong>
-                <span>queue, execution, outcome</span>
+                <small>06 · 证据</small>
+                <strong>指标与追踪</strong>
+                <span>队列、执行、结果</span>
               </div>
             </div>
           </div>
@@ -99,12 +98,11 @@ export default function ProjectPage() {
         <div className="shell">
           <div className="section-heading split-heading">
             <div>
-              <p className="eyebrow">Non-negotiable</p>
-              <h2>Eight invariants before eight features.</h2>
+              <p className="eyebrow">不可妥协</p>
+              <h2>先定义八项不变量，再开发八项功能。</h2>
             </div>
             <p>
-              Every implementation choice must make these easier to prove,
-              observe, or maintain.
+              每个实现选择都必须让这些不变量更容易证明、观测或维持。
             </p>
           </div>
           <div className="invariant-grid">
@@ -121,42 +119,40 @@ export default function ProjectPage() {
       <section className="section state-section">
         <div className="shell">
           <div className="state-copy">
-            <p className="eyebrow">Core protocol</p>
-            <h2>The state machine is the product contract.</h2>
+            <p className="eyebrow">核心协议</p>
+            <h2>状态机就是产品契约。</h2>
             <p>
-              Each transition has one owner. Terminal states have no outgoing
-              edges. Associated result data must be published consistently with
-              the terminal decision.
+              每个迁移都有唯一所有者。终态没有出边。关联的结果数据必须与终态
+              决策一致地发布。
             </p>
           </div>
           <div className="state-machine">
             <div className="state-line">
-              <span>SUBMITTED</span>
+              <span>已提交</span>
               <i>→</i>
-              <span>QUEUED</span>
+              <span>已入队</span>
               <i>→</i>
-              <span className="active">RUNNING</span>
+              <span className="active">运行中</span>
             </div>
             <div className="state-branches">
-              <span>SUCCEEDED</span>
-              <span>FAILED</span>
-              <span>CANCELLED</span>
-              <span>TIMED_OUT</span>
+              <span>成功</span>
+              <span>失败</span>
+              <span>已取消</span>
+              <span>已超时</span>
             </div>
-            <p>SUBMITTED or QUEUED may also become REJECTED or CANCELLED.</p>
+            <p>已提交或已入队也可以迁移为已拒绝或已取消。</p>
           </div>
         </div>
       </section>
 
       <section className="section project-cta">
         <div className="shell">
-          <h2>Begin with a counter, not an executor.</h2>
+          <h2>从计数器开始，而不是从执行器开始。</h2>
           <p>
-            Every later component depends on the reasoning habit formed in
-            Week 1.
+            后续每个组件都依赖于你在第 1 周形成的推理习惯。
           </p>
           <Link className="button button-primary" href="/lessons/threads-and-shared-state">
-            Open the first lesson <ArrowIcon />
+            打开第一课 <ArrowIcon />
           </Link>
         </div>
       </section>

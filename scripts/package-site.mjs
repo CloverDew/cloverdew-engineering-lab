@@ -15,7 +15,7 @@ const requiredPaths = [
 for (const path of requiredPaths) {
   if (!existsSync(resolve(path))) {
     throw new Error(
-      `Cannot package ${packageMetadata.name}: required build output is missing: ${path}`
+      `无法打包 ${packageMetadata.name}：缺少必需的构建产物：${path}`
     );
   }
 }
@@ -50,5 +50,5 @@ if (archive.status !== 0) {
 
 const sizeInMiB = (statSync(archivePath).size / 1024 / 1024).toFixed(2);
 console.log(
-  `Packaged ${packageMetadata.name}@${packageMetadata.version} as ${archiveName} (${sizeInMiB} MiB).`
+  `已将 ${packageMetadata.name}@${packageMetadata.version} 打包为 ${archiveName}（${sizeInMiB} MiB）。`
 );

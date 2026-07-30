@@ -13,7 +13,7 @@ export function CopyCode({ code }: { code: string }) {
 
   return (
     <button className="copy-button" onClick={copy} type="button">
-      {copied ? "Copied" : "Copy"}
+      {copied ? "已复制" : "复制代码"}
     </button>
   );
 }

@@ -12,17 +12,17 @@ export function SiteHeader() {
           </span>
           <span>
             <strong>Cloverdew</strong>
-            <small>Engineering Lab</small>
+            <small>工程实验室</small>
           </span>
         </Link>
-        <nav aria-label="Primary navigation" className="main-nav">
-          <Link href="/#library">Lessons</Link>
-          <Link href="/roadmap">Roadmap</Link>
-          <Link href="/project">QueryGate</Link>
+        <nav aria-label="主导航" className="main-nav">
+          <Link href="/#library">课程</Link>
+          <Link href="/roadmap">学习路线</Link>
+          <Link href="/project">QueryGate 项目</Link>
         </nav>
         <div className="header-actions">
           <a
-            aria-label="Cloverdew on GitHub"
+            aria-label="在 GitHub 上查看 Cloverdew"
             className="icon-button"
             href="https://github.com/cloverdew"
             rel="noreferrer"

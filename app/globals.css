@@ -1600,11 +1600,11 @@ a.lesson-card:hover {
 }
 
 .question-card summary small::before {
-  content: "+ Reveal answer";
+  content: "+ 展开答案";
 }
 
 .question-card[open] summary small::before {
-  content: "− Hide answer";
+  content: "− 收起答案";
 }
 
 .question-card[open] summary {

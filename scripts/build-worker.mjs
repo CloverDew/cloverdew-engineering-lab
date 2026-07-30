@@ -30,14 +30,12 @@ if (build.status !== 0) {
   process.exit(build.status ?? 1);
 }
 
-// Next 16.2.12 loads its development-only file logger from
-// node-environment.js even in a production bundle. OpenNext 1.20.2 bundles
-// that module for workerd, where its top-level CommonJS fs/path requires fail
-// before the NODE_ENV guard can make the logger a no-op.
+// 即使处于生产构建中，Next 16.2.12 仍会从 node-environment.js 加载仅供开发期使用的
+// 文件日志器。OpenNext 1.20.2 会为 workerd 打包该模块，而其中顶层的 CommonJS fs/path
+// require 会在 NODE_ENV 守卫把日志器变成空操作之前失败。
 //
-// Drop only the logger initializer from the generated production handler. The
-// marker and occurrence guard intentionally fail closed if the bundle shape
-// changes, so this workaround cannot silently patch an unrelated call.
+// 只从生成的生产处理器中移除日志器初始化逻辑。如果包的形状发生变化，标记和出现次数
+// 守卫会有意以失败结束，从而避免此变通方案悄悄修补无关调用。
 const handlerPath = resolve(
   ".open-next",
   "server-functions",
@@ -49,26 +47,25 @@ const handler = readFileSync(handlerPath, "utf8");
 const occurrences = handler.split(marker).length - 1;
 
 if (occurrences === 0) {
-  console.log("OpenNext worker does not require the console file logger; no patch needed.");
+  console.log("OpenNext Worker 不需要控制台文件日志器；无需修补。");
 } else if (occurrences === 1) {
   writeFileSync(
     handlerPath,
     handler.replace(
       marker,
-      "/* production workerd: development console file logger omitted */"
+      "/* 生产环境 workerd：已省略开发期控制台文件日志器 */"
     )
   );
-  console.log("Removed the development console file logger from the workerd bundle.");
+  console.log("已从 workerd 打包产物中移除开发期控制台文件日志器。");
 } else {
   throw new Error(
-    `Expected at most one console file logger initializer, found ${occurrences}.`
+    `预期至多一个控制台文件日志器初始化逻辑，实际找到 ${occurrences} 个。`
   );
 }
 
-// OpenNext's handler is an intermediate Node-platform bundle. Wrangler performs
-// the required second bundling pass that turns CommonJS Node built-in requires
-// into workerd-compatible ESM modules. Sites uploads the archived entrypoint
-// directly, so archive the Wrangler output rather than the intermediate worker.
+// OpenNext 的处理器是中间态 Node 平台包。Wrangler 会执行必需的第二次打包，将 CommonJS
+// Node 内置模块 require 转换为与 workerd 兼容的 ESM 模块。Sites 会直接上传归档后的入口点，
+// 因此应归档 Wrangler 的输出，而不是中间态 Worker。
 const bundleDir = mkdtempSync(join(tmpdir(), "cloverdew-worker-"));
 const wrangler = resolve(
   "node_modules",
@@ -104,7 +101,7 @@ try {
     resolve(".open-next", "worker.js.map")
   );
   console.log(
-    "Replaced the intermediate OpenNext entrypoint with the Wrangler bundle."
+    "已用 Wrangler 打包产物替换中间态 OpenNext 入口点。"
   );
 } finally {
   rmSync(bundleDir, { recursive: true, force: true });

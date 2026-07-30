@@ -6,7 +6,7 @@ export function LessonCard({ lesson }: { lesson: Lesson }) {
   const content = (
     <>
       <div className="lesson-card-topline">
-        <span>Week {lesson.week.toString().padStart(2, "0")}</span>
+        <span>第 {lesson.week.toString().padStart(2, "0")} 周</span>
         <span>{lesson.readTime}</span>
       </div>
       <h3>{lesson.title}</h3>
@@ -21,10 +21,10 @@ export function LessonCard({ lesson }: { lesson: Lesson }) {
       <div className="lesson-card-action">
         {lesson.status === "published" ? (
           <>
-            Read lesson <ArrowIcon />
+            查看课程 <ArrowIcon />
           </>
         ) : (
-          "Coming soon"
+          "即将推出"
         )}
       </div>
     </>

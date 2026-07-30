@@ -29,12 +29,13 @@ export function ProgressButton({ slug }: { slug: string }) {
 
   return (
     <button
+      aria-pressed={complete}
       className={`progress-button ${complete ? "is-complete" : ""}`}
       onClick={toggle}
       type="button"
     >
       <CheckIcon />
-      {complete ? "Completed" : "Mark as complete"}
+      {complete ? "已完成" : "标记为已完成"}
     </button>
   );
 }

@@ -1,141 +1,121 @@
-# Cloverdew Engineering Lab
+# Cloverdew 工程实验室
 
-An experiment-first learning site for engineers who want to reason about Java
-concurrency from first principles and carry that reasoning into query engines,
-streaming systems, and trustworthy data infrastructure for AI.
+这是一个以实验为先的学习站点，面向希望从第一性原理理解 Java
+并发，并将这种推理能力迁移到查询引擎、流式系统和面向 AI 的可信数据基础设施的工程师。
 
-[Open the hosted site](https://cloverdew-engineering-lab.cloverdue.chatgpt.site)
-(workspace access may be required).
+[打开已部署的网站](https://cloverdew-engineering-lab.cloverdue.chatgpt.site)
+（可能需要工作区访问权限）。
 
-## What this project contains
+## 项目内容
 
-The site follows a 24-week, two-hours-per-week systems engineering track. Each
-published lesson starts with a failure, builds a mental model, and ends with
-evidence that the implementation is correct.
+本站遵循一条为期 24 周、每周投入两小时的系统工程学习路径。每节已发布课程都从一个故障开始，建立心智模型，并以实现正确性的证据结束。
 
-The first four lessons cover:
+前四节课程涵盖：
 
-1. Threads, shared state, and lost updates
-2. Happens-before and safe publication
-3. Atomic task-state transitions
-4. Bounded queues and overload policy
+1. 线程、共享状态与丢失更新
+2. 先行发生（happens-before）与安全发布
+3. 原子任务状态迁移
+4. 有界队列与过载策略
 
-Answers stay collapsed until requested and include broken and corrected Java
-examples, API trade-offs, adversarial tests, and distributed-system
-consequences. The cumulative project, **QueryGate**, applies those ideas to a
-small multi-tenant execution service with explicit capacity, lifecycle, and
-shutdown invariants.
+答案默认折叠，按需展开；其中包含有缺陷和修正后的 Java 示例、应用程序编程接口（API）的取舍、对抗性测试以及分布式系统后果。累积项目 **QueryGate** 将这些思想用于一个小型多租户执行服务，并显式定义容量、生命周期和关闭不变量。
 
-## Tech stack
+## 技术栈
 
-- Next.js 16 and React 19
+- Next.js 16 与 React 19
 - TypeScript
-- OpenNext for Cloudflare
-- Wrangler/workerd-compatible deployment output
-- Plain CSS with light and dark themes
+- 面向 Cloudflare 的 OpenNext
+- 与 Wrangler/workerd 兼容的部署产物
+- 支持浅色和深色主题的原生 CSS
 
-## Run locally
+## 本地运行
 
-Requirements:
+前置要求：
 
-- Node.js 20 or newer
-- npm 10 or newer
+- Node.js 20 或更高版本
+- npm 10 或更高版本
 
-Install dependencies and start the development server:
+安装依赖并启动开发服务器：
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+打开 [http://localhost:3000](http://localhost:3000)。
 
-The development command intentionally uses Webpack because it is the stable
-fallback for a Turbopack resolver issue seen with this project. Production
-builds still use the normal Next.js build path.
+开发命令有意使用 Webpack：它是本项目遇到 Turbopack 解析器问题时稳定的后备方案。生产构建仍走正常的 Next.js 构建路径。
 
-## Validate a change
+## 验证改动
 
 ```bash
 npm run typecheck
 npm run build
 ```
 
-Run both commands before opening a pull request.
+发起拉取请求前请运行这两个命令。
 
-## Build and package the hosted worker
+## 构建并打包托管 Worker
 
-Create a deployable Sites archive with:
+使用以下命令创建可部署的 Sites 归档包：
 
 ```bash
 npm run package:site
 ```
 
-The command:
+该命令会：
 
-1. builds the application with OpenNext;
-2. removes a guarded development-only Next.js file-logger initializer;
-3. runs Wrangler's compatibility bundling pass;
-4. writes `site-build.tar.gz`.
+1. 使用 OpenNext 构建应用；
+2. 移除受保护的、仅在开发期使用的 Next.js 文件日志器初始化逻辑；
+3. 执行 Wrangler 的兼容性打包步骤；
+4. 写入 `site-build.tar.gz`。
 
-Do not archive the intermediate OpenNext worker directly. The second Wrangler
-pass converts remaining Node/CommonJS built-in imports into output that can run
-under workerd. The archive also includes `wrangler.jsonc` and
-`.openai/hosting.json`, which are required by the hosted deployment.
+不要直接归档中间态 OpenNext Worker。第二次 Wrangler 打包会把残留的 Node/CommonJS 内置模块导入转换为可在 workerd 中运行的产物。归档包还包含托管部署所需的 `wrangler.jsonc` 和 `.openai/hosting.json`。
 
-To inspect the generated package:
+检查生成的归档包：
 
 ```bash
 tar -tzf site-build.tar.gz
 ```
 
-The archive is a build artifact and is intentionally ignored by Git.
+该归档包是构建产物，已被有意加入 Git 忽略列表。
 
-## Useful commands
+## 常用命令
 
-| Command | Purpose |
+| 命令 | 用途 |
 | --- | --- |
-| `npm run dev` | Start the local development server |
-| `npm run typecheck` | Check TypeScript without emitting files |
-| `npm run build` | Create the standard Next.js production build |
-| `npm run build:worker` | Build the final workerd-compatible worker |
-| `npm run package:site` | Build and archive the deployable site |
-| `npm run preview` | Preview the OpenNext worker locally |
+| `npm run dev` | 启动本地开发服务器 |
+| `npm run typecheck` | 在不输出文件的情况下检查 TypeScript |
+| `npm run build` | 创建标准 Next.js 生产构建 |
+| `npm run build:worker` | 构建最终与 workerd 兼容的 Worker |
+| `npm run package:site` | 构建并归档可部署站点 |
+| `npm run preview` | 在本地预览 OpenNext Worker |
 
-## Project structure
+## 项目结构
 
 ```text
-app/                         Routes, layouts, and global styles
-components/                  Interactive and reusable UI components
-lib/content.ts               Lesson, roadmap, and question content
-public/                      Static deployment files
-scripts/build-worker.mjs     OpenNext and Wrangler worker build
-scripts/package-site.mjs     Reproducible Sites archive creation
-open-next.config.ts          OpenNext configuration
-wrangler.jsonc               workerd runtime and asset configuration
+app/                         路由、布局与全局样式
+components/                  交互式和可复用的界面组件
+lib/content.ts               课程、路线图与问题内容
+public/                      静态部署文件
+scripts/build-worker.mjs     OpenNext 和 Wrangler Worker 构建脚本
+scripts/package-site.mjs     可复现的 Sites 归档创建脚本
+open-next.config.ts          OpenNext 配置
+wrangler.jsonc               workerd 运行时与静态资源配置
 ```
 
-## Add or update a lesson
+## 新增或更新课程
 
-Lesson content lives in `lib/content.ts`. A lesson has a stable slug, week
-number, publication status, sections, and expandable questions. Detailed
-answers can include:
+课程内容位于 `lib/content.ts`。一节课程包含稳定的 slug、周次、发布状态、章节和可展开的问题。详细答案可以包含：
 
-- explanatory paragraphs and proof obligations;
-- Java code examples;
-- alternative APIs and their trade-offs;
-- distributed-system implications.
+- 解释性段落与证明义务；
+- Java 代码示例；
+- 备选 API 及其取舍；
+- 分布式系统影响。
 
-Keep upcoming lessons visible in the roadmap, but mark them as `upcoming` until
-their experiments and explanations are complete.
+让后续课程继续显示在路线图中，但在实验和说明完成前，将其标记为 `upcoming`。
 
-## Pull requests
+## 拉取请求
 
-Keep changes narrow and include the evidence used to validate them. For lesson
-content, state the invariant being taught and include an adversarial scenario.
-For runtime or packaging changes, run the typecheck, production build, and site
-packaging command.
+保持改动范围聚焦，并附上用于验证的证据。对于课程内容，请说明所教授的不变量并加入一个对抗性场景。对于运行时或打包改动，请运行类型检查、生产构建和站点打包命令。
 
-This repository does not currently declare an open-source license. Please do
-not assume reuse rights beyond reviewing and contributing through the
-repository.
+本仓库目前未声明开源许可证。除通过本仓库审阅和贡献外，请不要假定拥有其他复用权利。

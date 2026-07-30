@@ -4,76 +4,76 @@ import { ArrowIcon } from "@/components/icons";
 import { phases } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "24-week roadmap",
-  description: "The complete Cloverdew Engineering Lab learning roadmap."
+  title: "24 周学习路线图",
+  description: "Cloverdew 工程实验室的完整学习路线图。"
 };
 
 const months = [
   {
     month: "01",
-    title: "Shared state & coordination",
+    title: "共享状态与协作",
     weeks: [
-      "Threads and lost updates",
-      "Visibility and happens-before",
-      "Atomic state transitions",
-      "Bounded queue from first principles"
+      "线程与丢失更新",
+      "可见性与先行发生（happens-before）",
+      "原子状态迁移",
+      "从第一性原理实现有界队列"
     ],
-    gate: "Implement, break, and explain a bounded monitor queue."
+    gate: "实现、破坏并解释一个有界监视器队列。"
   },
   {
     month: "02",
-    title: "Execution lifecycle",
+    title: "执行生命周期",
     weeks: [
-      "Conditions and tenant permits",
-      "Bounded executors and overload",
-      "Cancellation and shutdown",
-      "Liveness and first measurements"
+      "条件变量与租户许可",
+      "有界执行器与过载",
+      "取消与关闭",
+      "活性与初步度量"
     ],
-    gate: "Defend QueryGate’s capacity, state, and shutdown policies."
+    gate: "为 QueryGate 的容量、状态和关闭策略做出论证。"
   },
   {
     month: "03",
-    title: "Runtime evidence",
+    title: "运行时证据",
     weeks: [
-      "Processes, threads, scheduling",
-      "JVM allocation and GC",
-      "Remote calls and deadlines",
-      "Contention and careful benchmarking"
+      "进程、线程与调度",
+      "JVM 分配与 GC",
+      "远程调用与截止时间",
+      "竞争与严谨基准测试"
     ],
-    gate: "Explain one latency event from a thread dump or JFR recording."
+    gate: "从一次线程转储或 JFR 记录中解释一个延迟事件。"
   },
   {
     month: "04",
-    title: "Query & streaming behavior",
+    title: "查询与流式系统行为",
     weeks: [
-      "Query execution pipelines",
-      "Fair tenant scheduling",
-      "CDC producers and backpressure",
-      "Idempotency and delivery semantics"
+      "查询执行流水线",
+      "公平的租户调度",
+      "CDC 生产者与背压",
+      "幂等性与交付语义"
     ],
-    gate: "Quantify tenant wait and CDC lag under a declared workload."
+    gate: "在明确的负载下量化租户等待时间和 CDC 延迟。"
   },
   {
     month: "05",
-    title: "Trustworthy data for AI",
+    title: "面向 AI 的可信数据",
     weeks: [
-      "Deterministic context planning",
-      "Freshness and CDC-fed context",
-      "Metrics, traces, and SLOs",
-      "Fault-injection campaign"
+      "确定性上下文规划",
+      "数据新鲜度与 CDC 驱动的上下文",
+      "指标、追踪与 SLO",
+      "故障注入演练"
     ],
-    gate: "Prove permission-before-retrieval and trace result provenance."
+    gate: "证明先校验权限再检索，并追踪结果溯源。"
   },
   {
     month: "06",
-    title: "Engineering proof",
+    title: "工程证明",
     weeks: [
-      "Correctness audit",
-      "Capacity curve",
-      "Portfolio design document",
-      "Technical defense and v1.0"
+      "正确性审计",
+      "容量曲线",
+      "作品集设计文档",
+      "技术答辩与 v1.0"
     ],
-    gate: "Rebuild one mechanism and defend the system without AI."
+    gate: "重新实现一个机制，并在不借助 AI 的情况下捍卫该系统。"
   }
 ];
 
@@ -82,12 +82,11 @@ export default function RoadmapPage() {
     <>
       <section className="page-hero">
         <div className="shell narrow">
-          <p className="eyebrow">24 active weeks · 48 focused hours</p>
-          <h1>A narrow road to systems ownership.</h1>
+          <p className="eyebrow">24 个有效学习周 · 48 个专注小时</p>
+          <h1>通向系统所有权的窄而深之路。</h1>
           <p>
-            The schedule moves when life interrupts. It never creates catch-up
-            debt, and it never adds a technology merely because it is
-            interesting.
+            生活打断学习时，计划随之顺延；它不会制造补课债务，也不会仅仅因为
+            某项技术看起来有趣就把它加入进来。
           </p>
         </div>
       </section>
@@ -96,20 +95,20 @@ export default function RoadmapPage() {
         <div className="shell">
           <div className="roadmap-principles">
             <div>
-              <strong>One project</strong>
-              <span>QueryGate grows every month.</span>
+              <strong>一个项目</strong>
+              <span>QueryGate 每月持续演进。</span>
             </div>
             <div>
-              <strong>One mechanism</strong>
-              <span>Each week has a narrow implementation target.</span>
+              <strong>一项机制</strong>
+              <span>每周都有一个明确而聚焦的实现目标。</span>
             </div>
             <div>
-              <strong>One interview problem</strong>
-              <span>Twenty minutes, then stop.</span>
+              <strong>一道面试题</strong>
+              <span>二十分钟，到点停止。</span>
             </div>
             <div>
-              <strong>One checkpoint</strong>
-              <span>Every fourth week, evidence decides the pace.</span>
+              <strong>一个检查点</strong>
+              <span>每四周由证据决定学习节奏。</span>
             </div>
           </div>
 
@@ -118,21 +117,21 @@ export default function RoadmapPage() {
               <article className="month-row" key={item.month}>
                 <div className="month-index">{item.month}</div>
                 <div className="month-title">
-                  <p>Month {Number(item.month)}</p>
+                  <p>第 {Number(item.month)} 月</p>
                   <h2>{item.title}</h2>
                 </div>
                 <ol>
                   {item.weeks.map((week, index) => (
                     <li key={week}>
                       <span>
-                        W{(Number(item.month) - 1) * 4 + index + 1}
+                        第 {(Number(item.month) - 1) * 4 + index + 1} 周
                       </span>
                       {week}
                     </li>
                   ))}
                 </ol>
                 <div className="month-gate">
-                  <span>Exit gate</span>
+                  <span>通过门槛</span>
                   <p>{item.gate}</p>
                 </div>
               </article>
@@ -143,7 +142,7 @@ export default function RoadmapPage() {
 
       <section className="section roadmap-phases">
         <div className="shell">
-          <p className="eyebrow">Three questions</p>
+          <p className="eyebrow">三个核心问题</p>
           <div className="phase-question-list">
             {phases.map((phase) => (
               <div key={phase.id}>
@@ -153,7 +152,7 @@ export default function RoadmapPage() {
             ))}
           </div>
           <Link className="button button-primary" href="/lessons/threads-and-shared-state">
-            Begin Week 1 <ArrowIcon />
+            从第 1 周开始 <ArrowIcon />
           </Link>
         </div>
       </section>

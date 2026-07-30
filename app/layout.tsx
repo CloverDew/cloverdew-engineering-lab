@@ -6,11 +6,11 @@ import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
   title: {
-    default: "Cloverdew Engineering Lab",
-    template: "%s · Cloverdew Engineering Lab"
+    default: "Cloverdew 工程实验室",
+    template: "%s · Cloverdew 工程实验室"
   },
   description:
-    "Detailed, project-driven lessons on Java concurrency, query systems, streaming infrastructure, and trustworthy data for AI."
+    "以项目驱动的深入课程，讲解 Java 并发、查询系统、流式基础设施和面向 AI 的可信数据。"
 };
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="zh-CN" suppressHydrationWarning>
       <body>
         <Script id="theme-init" strategy="beforeInteractive">
           {`try{const t=localStorage.getItem("cloverdew-theme");document.documentElement.dataset.theme=t||"light"}catch(e){}`}

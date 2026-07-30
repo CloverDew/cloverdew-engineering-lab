@@ -21,7 +21,7 @@ export async function generateMetadata({
   const lesson = getLesson(slug);
   return lesson
     ? { title: lesson.title, description: lesson.dek }
-    : { title: "Lesson not found" };
+    : { title: "未找到课程" };
 }
 
 export default async function LessonPage({ params }: LessonPageProps) {
@@ -42,9 +42,9 @@ export default async function LessonPage({ params }: LessonPageProps) {
       <header className="article-hero">
         <div className="shell article-shell">
           <div className="article-meta">
-            <span>Week {lesson.week.toString().padStart(2, "0")}</span>
+            <span>第 {lesson.week.toString().padStart(2, "0")} 周</span>
             <span>{lesson.readTime}</span>
-            <span>Java concurrency</span>
+            <span>Java 并发</span>
           </div>
           <h1>{lesson.title}</h1>
           <p>{lesson.dek}</p>
@@ -61,7 +61,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
       <div className="shell article-layout">
         <aside className="article-aside">
           <div className="toc">
-            <p>In this lesson</p>
+            <p>本课内容</p>
             {lesson.sections.map((section, sectionIndex) => (
               <a href={`#section-${sectionIndex + 1}`} key={section.title}>
                 <span>{String(sectionIndex + 1).padStart(2, "0")}</span>
@@ -70,14 +70,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
             ))}
             <a href="#explain-back">
               <span>{String(lesson.sections.length + 1).padStart(2, "0")}</span>
-              Explain it back
+              复述并解释
             </a>
           </div>
         </aside>
 
         <div className="article-content">
           <div className="key-idea">
-            <span>Keep this idea</span>
+            <span>记住这个核心观点</span>
             <p>{lesson.keyIdea}</p>
           </div>
 
@@ -96,7 +96,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 </ul>
               )}
               {section.sequence && (
-                <ol aria-label="Startup sequence" className="runtime-sequence">
+                <ol aria-label="启动顺序" className="runtime-sequence">
                   {section.sequence.map((step) => (
                     <li key={step.title}>
                       <div>
@@ -136,7 +136,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
               )}
               {section.note && (
                 <aside className="article-note">
-                  <strong>Pause and reason</strong>
+                  <strong>暂停并推理</strong>
                   <p>{section.note}</p>
                 </aside>
               )}
@@ -144,12 +144,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
           ))}
 
           <section className="explain-back" id="explain-back">
-            <p className="eyebrow">Retrieval check</p>
-            <h2>Answer first. Then inspect the reasoning.</h2>
+            <p className="eyebrow">回忆检查</p>
+            <h2>先回答，再检查推理。</h2>
             <p className="explain-back-intro">
-              Each answer is hidden by default. Say or write your answer before
-              expanding the card, then compare the mechanism, API choices, and
-              distributed-system consequence.
+              所有答案默认折叠。请先口头或书面作答，再展开卡片，对照其中的
+              机制、API 选择与分布式系统后果。
             </p>
             <ol className="question-list">
               {lesson.questions.map((question) => (
@@ -160,7 +159,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                       <small aria-hidden="true" />
                     </summary>
                     <div className="question-answer">
-                      <p className="answer-label">Detailed answer</p>
+                      <p className="answer-label">详细解答</p>
                       {question.answer.map((paragraph) => (
                         <p key={paragraph}>{paragraph}</p>
                       ))}
@@ -184,7 +183,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                       )}
                       {question.alternatives && (
                         <div className="api-options">
-                          <p className="answer-label">Choose by contract</p>
+                          <p className="answer-label">按契约选择</p>
                           {question.alternatives.map((alternative) => (
                             <article key={alternative.api}>
                               <h3>{alternative.api}</h3>
@@ -196,7 +195,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                       )}
                       {question.distributed && (
                         <aside className="distributed-note">
-                          <strong>Across process or machine boundaries</strong>
+                          <strong>跨进程或跨机器边界</strong>
                           <p>{question.distributed}</p>
                         </aside>
                       )}
@@ -206,28 +205,27 @@ export default async function LessonPage({ params }: LessonPageProps) {
               ))}
             </ol>
             <details className="ai-help">
-              <summary>When may I ask AI for help?</summary>
+              <summary>何时可以向 AI 求助？</summary>
               <p>
-                First write your invariant, shared state, failure behavior, and
-                proposed synchronization. Ask for a Socratic review before
-                requesting code. A complete implementation is available only
-                after your own compiling attempt passes review.
+                先写出不变量、共享状态、失败行为和拟采用的同步方式。先请 AI
+                以苏格拉底式提问审阅，再请求代码。只有你自己的可编译尝试通过
+                审阅后，才查看完整实现。
               </p>
             </details>
           </section>
 
           <div className="article-completion">
             <div>
-              <strong>Reading is not the finish line.</strong>
-              <p>Mark complete only after the experiment and explain-back.</p>
+              <strong>阅读不是终点。</strong>
+              <p>只有完成实验和复述解释后，才标记为完成。</p>
             </div>
             <ProgressButton slug={lesson.slug} />
           </div>
 
-          <nav aria-label="Lesson navigation" className="article-nav">
+          <nav aria-label="课程导航" className="article-nav">
             {previous ? (
               <Link href={`/lessons/${previous.slug}`}>
-                <span>Previous</span>
+                <span>上一课</span>
                 <strong>← {previous.title}</strong>
               </Link>
             ) : (
@@ -235,16 +233,16 @@ export default async function LessonPage({ params }: LessonPageProps) {
             )}
             {next ? (
               <Link href={`/lessons/${next.slug}`}>
-                <span>Next lesson</span>
+                <span>下一课</span>
                 <strong>
                   {next.title} <ArrowIcon />
                 </strong>
               </Link>
             ) : (
               <Link href="/roadmap">
-                <span>Continue</span>
+                <span>继续学习</span>
                 <strong>
-                  View the roadmap <ArrowIcon />
+                  查看学习路线 <ArrowIcon />
                 </strong>
               </Link>
             )}

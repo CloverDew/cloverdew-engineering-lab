@@ -13,35 +13,34 @@ export default function HomePage() {
           <div className="hero-copy">
             <div className="kicker">
               <span className="status-dot" />
-              A 24-week systems engineering track
+              为期 24 周的系统工程学习路径
             </div>
             <h1>
-              Understand the code.
+              读懂代码。
               <br />
-              <em>Own the system.</em>
+              <em>掌控系统。</em>
             </h1>
             <p className="hero-dek">
-              Detailed, experiment-first lessons for building Java concurrency
-              foundations and carrying them into query engines, streaming
-              systems, and trustworthy data infrastructure for AI.
+              以实验为先的深入课程，帮助你建立 Java 并发基础，并将这套
+              推理方法带入查询引擎、流式系统和面向 AI 的可信数据基础设施。
             </p>
             <div className="hero-actions">
               <Link className="button button-primary" href={`/lessons/${current.slug}`}>
-                Start with Week 1 <ArrowIcon />
+                从第 1 周开始 <ArrowIcon />
               </Link>
               <Link className="button button-quiet" href="/roadmap">
-                Explore the roadmap
+                查看学习路线
               </Link>
             </div>
             <div className="hero-proof">
               <span>
-                <CheckIcon /> 2 hours / week
+                <CheckIcon /> 每周 2 小时
               </span>
               <span>
-                <CheckIcon /> One cumulative project
+                <CheckIcon /> 一个累积项目
               </span>
               <span>
-                <CheckIcon /> Evidence over familiarity
+                <CheckIcon /> 证据胜过熟悉感
               </span>
             </div>
           </div>
@@ -50,14 +49,14 @@ export default function HomePage() {
               <span />
               <span />
               <span />
-              <small>querygate://current-track</small>
+              <small>querygate://当前学习路径</small>
             </div>
             <div className="terminal-body">
-              <p className="terminal-comment">// current objective</p>
+              <p className="terminal-comment">// 当前目标</p>
               <p>
-                <span className="terminal-key">prove</span>(
+                <span className="terminal-key">证明</span>(
                 <span className="terminal-string">
-                  &quot;concurrent correctness&quot;
+                  &quot;并发正确性&quot;
                 </span>
                 );
               </p>
@@ -66,29 +65,29 @@ export default function HomePage() {
                 <div>
                   <dt>01</dt>
                   <dd>
-                    <strong>Predict</strong>
-                    <span>Expected behavior + failure modes</span>
+                    <strong>预测</strong>
+                    <span>预期行为与失败模式</span>
                   </dd>
                 </div>
                 <div>
                   <dt>02</dt>
                   <dd>
-                    <strong>Implement</strong>
-                    <span>From invariants, without generated code</span>
+                    <strong>实现</strong>
+                    <span>从不变量出发，不依赖生成代码</span>
                   </dd>
                 </div>
                 <div>
                   <dt>03</dt>
                   <dd>
-                    <strong>Break</strong>
-                    <span>Adversarial tests + fault injection</span>
+                    <strong>破坏</strong>
+                    <span>对抗性测试与故障注入</span>
                   </dd>
                 </div>
                 <div>
                   <dt>04</dt>
                   <dd>
-                    <strong>Explain</strong>
-                    <span>Mechanism, evidence, production transfer</span>
+                    <strong>解释</strong>
+                    <span>机制、证据与生产迁移</span>
                   </dd>
                 </div>
               </dl>
@@ -101,19 +100,18 @@ export default function HomePage() {
         <div className="shell">
           <div className="section-heading split-heading">
             <div>
-              <p className="eyebrow">Current track</p>
-              <h2>Start with the failure, not the API.</h2>
+              <p className="eyebrow">当前学习路径</p>
+              <h2>先理解失败，再选择 API。</h2>
             </div>
             <p>
-              Each lesson combines a concrete experiment with expandable
-              answers, Java API trade-offs, failure examples, and a production
-              bridge into distributed systems.
+              每节课都将具体实验、可展开的答案、Java API 取舍、失败示例与
+              面向分布式系统的生产实践连接起来。
             </p>
           </div>
           <Link className="featured-lesson" href={`/lessons/${current.slug}`}>
             <div className="featured-number">01</div>
             <div>
-              <p className="eyebrow">Read next · {current.readTime}</p>
+              <p className="eyebrow">接下来阅读 · {current.readTime}</p>
               <h3>{current.title}</h3>
               <p>{current.dek}</p>
             </div>
@@ -127,8 +125,8 @@ export default function HomePage() {
       <section className="section phase-section">
         <div className="shell">
           <div className="section-heading">
-            <p className="eyebrow">The arc</p>
-            <h2>One system, three levels of responsibility.</h2>
+            <p className="eyebrow">学习主线</p>
+            <h2>一个系统，三层责任。</h2>
           </div>
           <div className="phase-grid">
             {phases.map((phase) => (
@@ -150,12 +148,12 @@ export default function HomePage() {
         <div className="shell">
           <div className="section-heading split-heading">
             <div>
-              <p className="eyebrow">Lesson library</p>
-              <h2>Java concurrency, from first principles.</h2>
+              <p className="eyebrow">课程库</p>
+              <h2>从第一性原理理解 Java 并发。</h2>
             </div>
             <p>
-              Four lessons are ready now. Later lessons remain visible so the
-              sequence stays clear without becoming overwhelming.
+              目前已有四节完整课程。后续课程保持可见，让学习顺序清晰，同时
+              不造成负担。
             </p>
           </div>
           <LessonFilter lessons={lessons} />
@@ -164,18 +162,17 @@ export default function HomePage() {
 
       <section className="section manifesto-section">
         <div className="shell manifesto">
-          <p className="eyebrow">The standard</p>
+          <p className="eyebrow">学习标准</p>
           <blockquote>
-            “Code that happens to work is not demonstrably correct.”
+            “偶然运行正确的代码，并不等于可以证明其正确。”
           </blockquote>
           <div className="manifesto-grid">
             <p>
-              Name the invariant. Identify shared state. Show the
-              happens-before edge. Bound resource use. Define failure and
-              shutdown.
+              写下不变量，识别共享状态，展示 happens-before 边，限制资源
+              使用，并定义失败与关闭行为。
             </p>
             <Link className="text-link" href="/project">
-              See how QueryGate puts this into practice <ArrowIcon />
+              查看 QueryGate 如何把这些原则落到实践中 <ArrowIcon />
             </Link>
           </div>
         </div>

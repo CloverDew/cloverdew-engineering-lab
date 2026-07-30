@@ -5,11 +5,11 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="shell footer-inner">
         <div>
-          <strong>Cloverdew Engineering Lab</strong>
-          <p>Build the mechanism. Break it. Explain why it works.</p>
+          <strong>Cloverdew 工程实验室</strong>
+          <p>构建机制，主动破坏，并解释它为何正确。</p>
         </div>
         <div className="footer-links">
-          <Link href="/roadmap">24-week roadmap</Link>
+          <Link href="/roadmap">24 周学习路线</Link>
           <a href="https://github.com/cloverdew">github.com/cloverdew</a>
         </div>
       </div>
