@@ -1521,9 +1521,444 @@ a.lesson-card:hover {
   margin: 7px 0 0;
 }
 
+.learning-step-nav {
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  display: none;
+  gap: 7px;
+  margin: 0 0 38px;
+  overflow-x: auto;
+  padding: 10px;
+  scrollbar-width: thin;
+}
+
+.learning-step-link {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: var(--ink-soft);
+  display: flex;
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 750;
+  gap: 7px;
+  line-height: 1.3;
+  padding: 8px 10px;
+}
+
+.learning-step-link:hover {
+  background: color-mix(in srgb, var(--blue) 8%, transparent);
+  border-color: color-mix(in srgb, var(--blue) 26%, var(--line));
+  color: var(--blue);
+}
+
+.learning-step-index {
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--blue);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  font-weight: 800;
+  height: 21px;
+  justify-content: center;
+  width: 21px;
+}
+
+.learning-flow {
+  counter-reset: learning-block;
+}
+
+.learning-block {
+  border-top: 1px solid var(--line);
+  counter-increment: learning-block;
+  padding: 54px 0;
+  scroll-margin-top: 104px;
+}
+
+.learning-block:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.learning-block-header {
+  align-items: start;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  margin-bottom: 22px;
+}
+
+.learning-block-header::before {
+  align-items: center;
+  background: color-mix(in srgb, var(--blue) 10%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--blue) 42%, var(--line));
+  border-radius: 50%;
+  color: var(--blue);
+  content: counter(learning-block, decimal-leading-zero);
+  display: flex;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  font-weight: 800;
+  height: 38px;
+  justify-content: center;
+  margin-top: 3px;
+  width: 38px;
+}
+
+.learning-block-header .eyebrow {
+  margin: 0 0 7px;
+}
+
+.learning-block-header h2 {
+  margin: 0 !important;
+}
+
+.learning-goal {
+  background: color-mix(in srgb, var(--lime) 18%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--lime) 46%, var(--line));
+  border-radius: 12px;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 22px 0 26px;
+  padding: 15px 18px;
+}
+
+.learning-goal strong,
+.learning-block-label {
+  color: var(--blue);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.learning-prerequisites {
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.65;
+  margin: -10px 0 22px;
+}
+
+.concept-map {
+  display: grid;
+  gap: 14px 28px;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  list-style: none;
+  margin: 28px 0;
+  padding: 0;
+}
+
+.concept-map-node {
+  align-items: flex-start;
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  gap: 3px;
+  min-height: 62px;
+  padding: 9px 13px;
+  position: relative;
+}
+
+.concept-map-node strong {
+  font-weight: 750;
+}
+
+.concept-map-arrow {
+  color: var(--blue);
+  font-size: 16px;
+  position: absolute;
+  left: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.concept-map-node small {
+  color: var(--ink-soft);
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.misconception-card,
+.implementation-card,
+.checkpoint-card,
+.distributed-boundary-card {
+  border-radius: 14px;
+  margin: 26px 0;
+  padding: 21px;
+}
+
+.misconception-card {
+  background: color-mix(in srgb, var(--orange) 9%, var(--paper-deep));
+  border: 1px solid color-mix(in srgb, var(--orange) 42%, var(--line));
+  border-left: 4px solid var(--orange);
+}
+
+.misconception-card > strong,
+.distributed-boundary-card > strong {
+  color: var(--orange);
+}
+
+.misconception-card p,
+.implementation-card p,
+.checkpoint-card p,
+.distributed-boundary-card p {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.experiment-output {
+  background: #17201d;
+  border: 1px solid #34413d;
+  border-radius: 12px;
+  color: #d9ebe0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 20px 0;
+  padding: 16px;
+}
+
+.experiment-output strong {
+  color: #9fcebe;
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  margin-bottom: 7px;
+}
+
+.experiment-output pre {
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+.learning-observation {
+  background: color-mix(in srgb, var(--blue) 7%, var(--paper-deep));
+  border: 1px solid color-mix(in srgb, var(--blue) 34%, var(--line));
+  border-left: 4px solid var(--blue);
+  border-radius: 12px;
+  margin: 20px 0;
+  padding: 16px 18px;
+}
+
+.learning-observation strong {
+  color: var(--blue);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.learning-observation p {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 7px 0 0;
+}
+
+.mechanism-trace {
+  border: 1px solid var(--line);
+  border-collapse: collapse;
+  border-radius: 12px;
+  font-size: 13px;
+  margin: 27px 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.mechanism-trace th,
+.mechanism-trace td {
+  border-bottom: 1px solid var(--line);
+  padding: 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.mechanism-trace th {
+  background: var(--paper-deep);
+  color: var(--ink-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}
+
+.mechanism-trace td {
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.mechanism-trace tr:last-child td {
+  border-bottom: 0;
+}
+
+.api-decision-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 27px 0;
+}
+
+.api-decision-grid article {
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.api-decision-grid h3 {
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+.api-decision-grid p {
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.65;
+  margin: 8px 0 0;
+}
+
+.api-decision-grid strong {
+  color: var(--ink);
+  display: block;
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+.implementation-card {
+  background: color-mix(in srgb, var(--blue) 6%, var(--paper-deep));
+  border: 1px solid color-mix(in srgb, var(--blue) 34%, var(--line));
+}
+
+.implementation-card > strong,
+.checkpoint-card > strong {
+  color: var(--blue);
+}
+
+.implementation-card ul,
+.checkpoint-card ul {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 12px 0;
+  padding-left: 19px;
+}
+
+.distributed-boundary-card {
+  background: color-mix(in srgb, var(--orange) 8%, var(--paper-deep));
+  border: 1px solid color-mix(in srgb, var(--orange) 38%, var(--line));
+  border-left: 4px solid var(--orange);
+}
+
+.distributed-boundary-card ul {
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.65;
+  margin: 10px 0 0;
+  padding-left: 19px;
+}
+
+.checkpoint-card {
+  background: color-mix(in srgb, var(--blue) 8%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--blue) 36%, var(--line));
+}
+
+.learning-details {
+  border-top: 1px solid var(--line);
+  margin-top: 17px;
+  padding-top: 14px;
+}
+
+.learning-details summary {
+  color: var(--blue);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.learning-details p,
+.learning-details li {
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.learning-details .code-block {
+  margin-bottom: 0;
+}
+
+.learning-retrieval {
+  margin-top: 0;
+}
+
+.learning-retrieval-list > li > p {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 17px 0;
+}
+
+.code-kind {
+  color: #9fcebe;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  margin-left: auto;
+  padding-right: 9px;
+}
+
 @media (max-width: 620px) {
   .runtime-comparison {
     grid-template-columns: 1fr;
+  }
+
+  .learning-block {
+    padding: 40px 0;
+  }
+
+  .learning-block-header {
+    gap: 12px;
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .learning-block-header::before {
+    font-size: 9px;
+    height: 30px;
+    width: 30px;
+  }
+
+  .api-decision-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mechanism-trace {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .concept-map {
+    gap: 29px;
+    grid-template-columns: 1fr;
+  }
+
+  .concept-map-arrow {
+    left: 50%;
+    top: -25px;
+    transform: translateX(-50%) rotate(90deg);
   }
 }
 
@@ -1915,6 +2350,10 @@ a.lesson-card:hover {
 
   .article-aside {
     display: none;
+  }
+
+  .learning-step-nav-mobile {
+    display: flex;
   }
 }
 

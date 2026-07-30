@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowIcon } from "@/components/icons";
-import { phases } from "@/lib/content";
+import { phases, publishedLessons } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "24 周学习路线图",
@@ -78,6 +78,10 @@ const months = [
 ];
 
 export default function RoadmapPage() {
+  const firstLesson = publishedLessons[0];
+  const startLabel =
+    firstLesson.week === 0 ? "从准备单元开始" : "从第 1 周开始";
+
   return (
     <>
       <section className="page-hero">
@@ -85,8 +89,8 @@ export default function RoadmapPage() {
           <p className="eyebrow">24 个有效学习周 · 48 个专注小时</p>
           <h1>通向系统所有权的窄而深之路。</h1>
           <p>
-            生活打断学习时，计划随之顺延；它不会制造补课债务，也不会仅仅因为
-            某项技术看起来有趣就把它加入进来。
+            先用一个不计入 24 周的 Java 阅读桥接单元补齐代码阅读坐标，再进入每周
+            两小时的深度练习。生活打断学习时，计划随之顺延；它不会制造补课债务。
           </p>
         </div>
       </section>
@@ -151,8 +155,8 @@ export default function RoadmapPage() {
               </div>
             ))}
           </div>
-          <Link className="button button-primary" href="/lessons/threads-and-shared-state">
-            从第 1 周开始 <ArrowIcon />
+          <Link className="button button-primary" href={`/lessons/${firstLesson.slug}`}>
+            {startLabel} <ArrowIcon />
           </Link>
         </div>
       </section>

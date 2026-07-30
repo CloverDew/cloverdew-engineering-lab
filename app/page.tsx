@@ -5,6 +5,8 @@ import { lessons, phases, publishedLessons } from "@/lib/content";
 
 export default function HomePage() {
   const current = publishedLessons[0];
+  const startLabel = current.week === 0 ? "从准备单元开始" : "从第 1 周开始";
+  const featuredNumber = current.week.toString().padStart(2, "0");
 
   return (
     <>
@@ -26,7 +28,7 @@ export default function HomePage() {
             </p>
             <div className="hero-actions">
               <Link className="button button-primary" href={`/lessons/${current.slug}`}>
-                从第 1 周开始 <ArrowIcon />
+                {startLabel} <ArrowIcon />
               </Link>
               <Link className="button button-quiet" href="/roadmap">
                 查看学习路线
@@ -109,7 +111,7 @@ export default function HomePage() {
             </p>
           </div>
           <Link className="featured-lesson" href={`/lessons/${current.slug}`}>
-            <div className="featured-number">01</div>
+            <div className="featured-number">{featuredNumber}</div>
             <div>
               <p className="eyebrow">接下来阅读 · {current.readTime}</p>
               <h3>{current.title}</h3>
@@ -149,11 +151,11 @@ export default function HomePage() {
           <div className="section-heading split-heading">
             <div>
               <p className="eyebrow">课程库</p>
-              <h2>从第一性原理理解 Java 并发。</h2>
+              <h2>从读懂 Java，到证明并发正确性。</h2>
             </div>
             <p>
-              目前已有四节完整课程。后续课程保持可见，让学习顺序清晰，同时
-              不造成负担。
+              目前已有 {publishedLessons.length} 节可学习内容，包含一个准备单元。
+              后续课程保持可见，让学习顺序清晰，同时不造成负担。
             </p>
           </div>
           <LessonFilter lessons={lessons} />

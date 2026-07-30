@@ -3,6 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowIcon } from "@/components/icons";
 import { CopyCode } from "@/components/copy-code";
+import {
+  getLearningBlockId,
+  getLearningBlockKindLabel,
+  getLearningBlockNavigationLabel,
+  LearningBlocks
+} from "@/components/learning-blocks";
 import { ProgressButton } from "@/components/progress-button";
 import { getLesson, publishedLessons } from "@/lib/content";
 
@@ -36,15 +42,31 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const previous = index > 0 ? publishedLessons[index - 1] : null;
   const next =
     index < publishedLessons.length - 1 ? publishedLessons[index + 1] : null;
+  const learningBlocks = lesson.learningBlocks ?? [];
+  const hasLearningBlocks = learningBlocks.length > 0;
+  const checkpointPrompts = learningBlocks.flatMap((block) =>
+    block.checkpoint ? [block.checkpoint.prompt] : []
+  );
+  const retrievalPrompts =
+    checkpointPrompts.length > 0
+      ? checkpointPrompts
+      : learningBlocks
+          .flatMap((block) => (block.goal ? [block.goal] : []))
+          .slice(0, 3);
+  const unitLabel =
+    lesson.week === 0
+      ? "准备单元"
+      : `第 ${lesson.week.toString().padStart(2, "0")} 周`;
+  const subjectLabel = lesson.week === 0 ? "Java 阅读基础" : "Java 并发";
 
   return (
     <article>
       <header className="article-hero">
         <div className="shell article-shell">
           <div className="article-meta">
-            <span>第 {lesson.week.toString().padStart(2, "0")} 周</span>
+            <span>{unitLabel}</span>
             <span>{lesson.readTime}</span>
-            <span>Java 并发</span>
+            <span>{subjectLabel}</span>
           </div>
           <h1>{lesson.title}</h1>
           <p>{lesson.dek}</p>
@@ -61,17 +83,37 @@ export default async function LessonPage({ params }: LessonPageProps) {
       <div className="shell article-layout">
         <aside className="article-aside">
           <div className="toc">
-            <p>本课内容</p>
-            {lesson.sections.map((section, sectionIndex) => (
-              <a href={`#section-${sectionIndex + 1}`} key={section.title}>
-                <span>{String(sectionIndex + 1).padStart(2, "0")}</span>
-                {section.title}
-              </a>
-            ))}
-            <a href="#explain-back">
-              <span>{String(lesson.sections.length + 1).padStart(2, "0")}</span>
-              复述并解释
-            </a>
+            <p>{hasLearningBlocks ? "本课步骤" : "本课内容"}</p>
+            {hasLearningBlocks ? (
+              <>
+                {learningBlocks.map((block, blockIndex) => (
+                  <a
+                    href={`#${getLearningBlockId(blockIndex)}`}
+                    key={`${block.kind}-${block.title}`}
+                  >
+                    <span>{String(blockIndex + 1).padStart(2, "0")}</span>
+                    {getLearningBlockNavigationLabel(block)}
+                  </a>
+                ))}
+                <a href="#explain-back">
+                  <span>{String(learningBlocks.length + 1).padStart(2, "0")}</span>
+                  复述并解释
+                </a>
+              </>
+            ) : (
+              <>
+                {lesson.sections.map((section, sectionIndex) => (
+                  <a href={`#section-${sectionIndex + 1}`} key={section.title}>
+                    <span>{String(sectionIndex + 1).padStart(2, "0")}</span>
+                    {section.title}
+                  </a>
+                ))}
+                <a href="#explain-back">
+                  <span>{String(lesson.sections.length + 1).padStart(2, "0")}</span>
+                  复述并解释
+                </a>
+              </>
+            )}
           </div>
         </aside>
 
@@ -81,138 +123,196 @@ export default async function LessonPage({ params }: LessonPageProps) {
             <p>{lesson.keyIdea}</p>
           </div>
 
-          {lesson.sections.map((section, sectionIndex) => (
-            <section id={`section-${sectionIndex + 1}`} key={section.title}>
-              <p className="eyebrow">{section.eyebrow}</p>
-              <h2>{section.title}</h2>
-              {section.body.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
+          {hasLearningBlocks && (
+            <nav
+              aria-label="本课学习步骤（移动端）"
+              className="learning-step-nav learning-step-nav-mobile"
+              data-mobile-step-nav
+            >
+              {learningBlocks.map((block, blockIndex) => (
+                <a
+                  aria-label={`第 ${blockIndex + 1} 步：${getLearningBlockNavigationLabel(block)}`}
+                  className="learning-step-link"
+                  href={`#${getLearningBlockId(blockIndex)}`}
+                  key={`${block.kind}-${block.title}`}
+                >
+                  <span className="learning-step-index">
+                    {String(blockIndex + 1).padStart(2, "0")}
+                  </span>
+                  <span>{getLearningBlockKindLabel(block.kind)}</span>
+                </a>
               ))}
-              {section.bullets && (
-                <ul>
-                  {section.bullets.map((bullet) => (
-                    <li key={bullet}>{bullet}</li>
+              <a className="learning-step-link" href="#explain-back">
+                <span className="learning-step-index">
+                  {String(learningBlocks.length + 1).padStart(2, "0")}
+                </span>
+                <span>复述</span>
+              </a>
+            </nav>
+          )}
+
+          {hasLearningBlocks ? (
+            <>
+              <LearningBlocks blocks={learningBlocks} />
+              <section className="explain-back learning-retrieval" id="explain-back">
+                <p className="eyebrow">结束前的检索练习</p>
+                <h2>合上正文，用自己的话复述。</h2>
+                <p className="explain-back-intro">
+                  不要翻回上文，也不要先看 AI 的解释。先指出这一课要保护的
+                  状态、它为什么会失败，以及你会用什么证据证明修复有效。
+                </p>
+                {retrievalPrompts.length > 0 ? (
+                  <ol className="question-list learning-retrieval-list">
+                    {retrievalPrompts.map((prompt, promptIndex) => (
+                      <li key={`${promptIndex}-${prompt}`}>
+                        <p>{prompt}</p>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p>
+                    从本课任取一个 API，用“它保护什么、它不保护什么、跨 JVM 后会
+                    怎样”这三个问题复述它的边界。
+                  </p>
+                )}
+              </section>
+            </>
+          ) : (
+            <>
+              {lesson.sections.map((section, sectionIndex) => (
+                <section id={`section-${sectionIndex + 1}`} key={section.title}>
+                  <p className="eyebrow">{section.eyebrow}</p>
+                  <h2>{section.title}</h2>
+                  {section.body.map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
                   ))}
-                </ul>
-              )}
-              {section.sequence && (
-                <ol aria-label="启动顺序" className="runtime-sequence">
-                  {section.sequence.map((step) => (
-                    <li key={step.title}>
-                      <div>
-                        <strong>{step.title}</strong>
-                        <p>{step.body}</p>
+                  {section.bullets && (
+                    <ul>
+                      {section.bullets.map((bullet) => (
+                        <li key={bullet}>{bullet}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {section.sequence && (
+                    <ol aria-label="启动顺序" className="runtime-sequence">
+                      {section.sequence.map((step) => (
+                        <li key={step.title}>
+                          <div>
+                            <strong>{step.title}</strong>
+                            <p>{step.body}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                  {section.code && (
+                    <div className="code-block">
+                      <div className="code-header">
+                        <span>{section.codeLabel ?? "Java"}</span>
+                        <CopyCode code={section.code} />
                       </div>
+                      <pre>
+                        <code>{section.code}</code>
+                      </pre>
+                    </div>
+                  )}
+                  {section.comparison && (
+                    <div className="runtime-comparison">
+                      {section.comparison.map((item) => (
+                        <article key={item.title}>
+                          <span>{item.label}</span>
+                          <h3>{item.title}</h3>
+                          <p>{item.body}</p>
+                          <ul>
+                            {item.bullets.map((bullet) => (
+                              <li key={bullet}>{bullet}</li>
+                            ))}
+                          </ul>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                  {section.note && (
+                    <aside className="article-note">
+                      <strong>暂停并推理</strong>
+                      <p>{section.note}</p>
+                    </aside>
+                  )}
+                </section>
+              ))}
+
+              <section className="explain-back" id="explain-back">
+                <p className="eyebrow">回忆检查</p>
+                <h2>先回答，再检查推理。</h2>
+                <p className="explain-back-intro">
+                  所有答案默认折叠。请先口头或书面作答，再展开卡片，对照其中的
+                  机制、API 选择与分布式系统后果。
+                </p>
+                <ol className="question-list">
+                  {lesson.questions.map((question) => (
+                    <li key={question.prompt}>
+                      <details className="question-card">
+                        <summary>
+                          <span>{question.prompt}</span>
+                          <small aria-hidden="true" />
+                        </summary>
+                        <div className="question-answer">
+                          <p className="answer-label">详细解答</p>
+                          {question.answer.map((paragraph) => (
+                            <p key={paragraph}>{paragraph}</p>
+                          ))}
+                          {question.bullets && (
+                            <ul>
+                              {question.bullets.map((bullet) => (
+                                <li key={bullet}>{bullet}</li>
+                              ))}
+                            </ul>
+                          )}
+                          {question.code && (
+                            <div className="code-block answer-code">
+                              <div className="code-header">
+                                <span>{question.codeLabel ?? "Java"}</span>
+                                <CopyCode code={question.code} />
+                              </div>
+                              <pre>
+                                <code>{question.code}</code>
+                              </pre>
+                            </div>
+                          )}
+                          {question.alternatives && (
+                            <div className="api-options">
+                              <p className="answer-label">按契约选择</p>
+                              {question.alternatives.map((alternative) => (
+                                <article key={alternative.api}>
+                                  <h3>{alternative.api}</h3>
+                                  <p>{alternative.fit}</p>
+                                  <small>{alternative.tradeoff}</small>
+                                </article>
+                              ))}
+                            </div>
+                          )}
+                          {question.distributed && (
+                            <aside className="distributed-note">
+                              <strong>跨进程或跨机器边界</strong>
+                              <p>{question.distributed}</p>
+                            </aside>
+                          )}
+                        </div>
+                      </details>
                     </li>
                   ))}
                 </ol>
-              )}
-              {section.code && (
-                <div className="code-block">
-                  <div className="code-header">
-                    <span>{section.codeLabel ?? "Java"}</span>
-                    <CopyCode code={section.code} />
-                  </div>
-                  <pre>
-                    <code>{section.code}</code>
-                  </pre>
-                </div>
-              )}
-              {section.comparison && (
-                <div className="runtime-comparison">
-                  {section.comparison.map((item) => (
-                    <article key={item.title}>
-                      <span>{item.label}</span>
-                      <h3>{item.title}</h3>
-                      <p>{item.body}</p>
-                      <ul>
-                        {item.bullets.map((bullet) => (
-                          <li key={bullet}>{bullet}</li>
-                        ))}
-                      </ul>
-                    </article>
-                  ))}
-                </div>
-              )}
-              {section.note && (
-                <aside className="article-note">
-                  <strong>暂停并推理</strong>
-                  <p>{section.note}</p>
-                </aside>
-              )}
-            </section>
-          ))}
-
-          <section className="explain-back" id="explain-back">
-            <p className="eyebrow">回忆检查</p>
-            <h2>先回答，再检查推理。</h2>
-            <p className="explain-back-intro">
-              所有答案默认折叠。请先口头或书面作答，再展开卡片，对照其中的
-              机制、API 选择与分布式系统后果。
-            </p>
-            <ol className="question-list">
-              {lesson.questions.map((question) => (
-                <li key={question.prompt}>
-                  <details className="question-card">
-                    <summary>
-                      <span>{question.prompt}</span>
-                      <small aria-hidden="true" />
-                    </summary>
-                    <div className="question-answer">
-                      <p className="answer-label">详细解答</p>
-                      {question.answer.map((paragraph) => (
-                        <p key={paragraph}>{paragraph}</p>
-                      ))}
-                      {question.bullets && (
-                        <ul>
-                          {question.bullets.map((bullet) => (
-                            <li key={bullet}>{bullet}</li>
-                          ))}
-                        </ul>
-                      )}
-                      {question.code && (
-                        <div className="code-block answer-code">
-                          <div className="code-header">
-                            <span>{question.codeLabel ?? "Java"}</span>
-                            <CopyCode code={question.code} />
-                          </div>
-                          <pre>
-                            <code>{question.code}</code>
-                          </pre>
-                        </div>
-                      )}
-                      {question.alternatives && (
-                        <div className="api-options">
-                          <p className="answer-label">按契约选择</p>
-                          {question.alternatives.map((alternative) => (
-                            <article key={alternative.api}>
-                              <h3>{alternative.api}</h3>
-                              <p>{alternative.fit}</p>
-                              <small>{alternative.tradeoff}</small>
-                            </article>
-                          ))}
-                        </div>
-                      )}
-                      {question.distributed && (
-                        <aside className="distributed-note">
-                          <strong>跨进程或跨机器边界</strong>
-                          <p>{question.distributed}</p>
-                        </aside>
-                      )}
-                    </div>
-                  </details>
-                </li>
-              ))}
-            </ol>
-            <details className="ai-help">
-              <summary>何时可以向 AI 求助？</summary>
-              <p>
-                先写出不变量、共享状态、失败行为和拟采用的同步方式。先请 AI
-                以苏格拉底式提问审阅，再请求代码。只有你自己的可编译尝试通过
-                审阅后，才查看完整实现。
-              </p>
-            </details>
-          </section>
+                <details className="ai-help">
+                  <summary>何时可以向 AI 求助？</summary>
+                  <p>
+                    先写出不变量、共享状态、失败行为和拟采用的同步方式。先请 AI
+                    以苏格拉底式提问审阅，再请求代码。只有你自己的可编译尝试通过
+                    审阅后，才查看完整实现。
+                  </p>
+                </details>
+              </section>
+            </>
+          )}
 
           <div className="article-completion">
             <div>

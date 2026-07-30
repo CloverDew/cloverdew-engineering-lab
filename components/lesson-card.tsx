@@ -3,10 +3,15 @@ import { ArrowIcon } from "@/components/icons";
 import type { Lesson } from "@/lib/content";
 
 export function LessonCard({ lesson }: { lesson: Lesson }) {
+  const unitLabel =
+    lesson.week === 0
+      ? "准备单元"
+      : `第 ${lesson.week.toString().padStart(2, "0")} 周`;
+
   const content = (
     <>
       <div className="lesson-card-topline">
-        <span>第 {lesson.week.toString().padStart(2, "0")} 周</span>
+        <span>{unitLabel}</span>
         <span>{lesson.readTime}</span>
       </div>
       <h3>{lesson.title}</h3>

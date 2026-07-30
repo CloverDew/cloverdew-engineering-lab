@@ -147,12 +147,15 @@ export default function ProjectPage() {
 
       <section className="section project-cta">
         <div className="shell">
-          <h2>从计数器开始，而不是从执行器开始。</h2>
+          <h2>先读懂 Java，再从计数器开始。</h2>
           <p>
-            后续每个组件都依赖于你在第 1 周形成的推理习惯。
+            准备单元建立对象、引用和测试契约的坐标；后续每个组件都依赖于你在第 1 周形成的并发推理习惯。
           </p>
-          <Link className="button button-primary" href="/lessons/threads-and-shared-state">
-            打开第一课 <ArrowIcon />
+          <Link
+            className="button button-primary"
+            href="/lessons/java-reading-and-runtime-bridge"
+          >
+            从准备单元开始 <ArrowIcon />
           </Link>
         </div>
       </section>

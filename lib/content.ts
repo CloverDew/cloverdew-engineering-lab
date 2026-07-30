@@ -32,6 +32,70 @@ export type LessonQuestion = {
   }[];
 };
 
+export type LessonLearningBlockKind =
+  | "orientation"
+  | "misconception"
+  | "experiment"
+  | "mechanism"
+  | "api-decision"
+  | "implementation"
+  | "distributed-boundary"
+  | "checkpoint";
+
+/**
+ * 按学习者应当进行的推理顺序渲染的渐进式学习单元：
+ * 定位、预测、观察、解释、实现，再检查边界。
+ *
+ * 尚未迁移到该格式的课程仍使用兼容的 `sections` 与 `questions` 模型。
+ */
+export type LessonLearningBlock = {
+  kind: LessonLearningBlockKind;
+  eyebrow: string;
+  title: string;
+  body: string[];
+  bullets?: string[];
+  goal?: string;
+  prediction?: string;
+  observation?: string;
+  prerequisites?: string[];
+  conceptMap?: {
+    label: string;
+    relation: string;
+  }[];
+  invariant?: string;
+  code?: string;
+  codeLabel?: string;
+  codeKind?: "runnable" | "broken-runnable" | "excerpt" | "pseudocode";
+  javaVersion?: string;
+  runCommand?: string;
+  expectedOutput?: string[];
+  trace?: {
+    thread: string;
+    action: string;
+    state: string;
+  }[];
+  apiOptions?: {
+    api: string;
+    useWhen: string;
+    guarantees: string;
+    doesNotGuarantee: string;
+  }[];
+  task?: string;
+  constraints?: string[];
+  hints?: string[];
+  solution?: string;
+  adversarialTest?: string;
+  localGuarantee?: string;
+  breaksWith?: string;
+  alternatives?: string[];
+  checkpoint?: {
+    prompt: string;
+    hint?: string;
+    answer?: string[];
+    successCriteria: string[];
+  };
+};
+
 export type Lesson = {
   slug: string;
   week: number;
@@ -44,32 +108,744 @@ export type Lesson = {
   keyIdea: string;
   sections: LessonSection[];
   questions: LessonQuestion[];
+  learningBlocks?: LessonLearningBlock[];
 };
 
 export const lessons: Lesson[] = [
   {
-    slug: "threads-and-shared-state",
-    week: 1,
-    title: "线程、共享状态，以及会撒谎的计数器",
-    dek: "从进程和线程的边界开始，理解高并发究竟要保护什么、为什么 count++ 会丢失更新，以及如何用不变量而不是一次侥幸的运行结果判断并发代码。",
-    readTime: "32 分钟",
+    slug: "java-reading-and-runtime-bridge",
+    week: 0,
+    title: "Java 阅读与运行桥接",
+    dek: "先把一段 Java 代码真正读成一次可执行的过程：类如何组织代码、JVM 为什么从 main 开始、局部变量与对象字段分别住在哪里，以及如何用异常和 JUnit 把行为写成可检查的契约。",
+    readTime: "42 分钟",
     status: "published",
-    tags: ["线程", "竞态条件", "ConcurrentHashMap", "单例"],
+    tags: ["Java 基础", "main", "对象引用", "异常", "JUnit 5"],
     searchTerms: [
-      "进程",
-      "高并发",
-      "HashMap",
-      "AtomicInteger",
-      "LongAdder",
-      "synchronized",
-      "ReentrantLock",
-      "懒汉式",
-      "饿汉式",
-      "双重检查锁",
-      "enum"
+      "class",
+      "main",
+      "局部变量",
+      "实例字段",
+      "对象引用",
+      "异常",
+      "assertEquals",
+      "assertThrows"
     ],
     keyIdea:
-      "只有任意可能的线程交错执行都保持不变量，一个并发组件才是正确的。",
+      "读 Java 时先问三件事：谁调用这段代码、每个变量保存的是值还是引用、失败时调用方能观察到什么。",
+    sections: [],
+    questions: [],
+    learningBlocks: [
+      {
+        kind: "orientation",
+        eyebrow: "第 0 步 · 建立阅读坐标",
+        title: "一段 Java 不是从第一行开始，而是从 main 的约定开始",
+        goal:
+          "能够从一个最小 Java 程序中指出类、main 方法、局部变量和一次方法调用，并知道命令行实际运行了哪个类。",
+        prerequisites: [
+          "已安装 JDK 21；在终端执行 java --version 能看到 21。",
+          "先把下面代码保存为与 public 类同名的 MainMethodDemo.java。"
+        ],
+        conceptMap: [
+          {
+            label: "class",
+            relation: "定义一组状态和行为；源文件可包含一个同名 public 类"
+          },
+          {
+            label: "main",
+            relation: "JVM 启动应用时寻找的入口约定"
+          },
+          {
+            label: "local variable",
+            relation: "只在当前方法执行期间可见的名字"
+          },
+          {
+            label: "method call",
+            relation: "把控制权交给另一个方法，返回后继续下一行"
+          }
+        ],
+        body: [
+          "`.java` 文件只是源码文本，还没有在运行。`javac` 将它编译成 JVM 能加载的 class 文件；`java MainMethodDemo` 启动 JVM，JVM 再调用约定签名为 `public static void main(String[] args)` 的方法。你不必一开始理解 JVM 的全部细节，但必须知道：main 不是魔法，它是启动器与类之间的一份约定。",
+          "类像一张蓝图：它把数据（字段）和能操作数据的方法放在一起。`public final class MainMethodDemo` 表示这个文件公开定义了一个不能被继承的类；本课不要求你背下每个修饰符，只要求你能分清“类的定义”与“某次方法调用时临时出现的变量”。",
+          "执行代码时，不要从术语开始背。先沿着控制流朗读：JVM 调用 main，main 创建 `learner` 和 `studyDate`，然后调用 `System.out.println` 输出一行文字。"
+        ],
+        codeLabel: "Java 21 · MainMethodDemo.java",
+        codeKind: "runnable",
+        javaVersion: "Java 21",
+        code: `import java.time.LocalDate;
+
+public final class MainMethodDemo {
+    private MainMethodDemo() {
+    }
+
+    public static void main(String[] args) {
+        String learner = "小林";
+        LocalDate studyDate = LocalDate.of(2026, 7, 30);
+
+        System.out.println("你好，" + learner + "。今天是 " + studyDate + "。");
+    }
+}`,
+        runCommand:
+          "javac --release 21 MainMethodDemo.java && java MainMethodDemo",
+        expectedOutput: ["你好，小林。今天是 2026-07-30。"]
+      },
+      {
+        kind: "misconception",
+        eyebrow: "第 1 步 · 先修正一个直觉",
+        title: "复制引用，不等于复制对象；局部变量也不等于局部对象",
+        goal:
+          "区分“变量这个名字”与“变量指向的对象”，并能解释为什么一个方法里的局部引用仍可能指向可被别处观察到的对象。",
+        prediction:
+          "运行前先判断：second.addNote 会不会改变 first 看到的 notes？changeLocalName 会不会改变 main 中的 localName？",
+        observation:
+          "first 输出新增的笔记，而 localName 仍是小林：前者通过两个引用修改同一对象字段，后者只重新赋值了被调方法自己的参数变量。",
+        body: [
+          "初学者最容易把 `Notebook second = first` 读成“创建第二本笔记本”。实际上，这一行只复制了一个引用值：`first` 与 `second` 是 main 方法中的两个局部变量，但它们指向同一个 `Notebook` 对象。对象中的 `notes` 字段属于那一个对象，而不属于某一个局部变量名。",
+          "反过来，`changeLocalName(localName)` 没有改变调用者里的 `localName`。Java 传递的是值；这里传递的是 String 引用的副本。被调用方法把自己的参数变量重新指向另一个 String，并不会回写调用者的局部变量。String 本身又是不可变的，这让这个例子更容易看清“改变量名”与“改对象状态”的区别。",
+          "这个区别会直接通向并发：线程各有自己的方法调用和局部变量，但它们的局部引用可以指向同一个堆对象。下一课的共享状态问题，正是从这里开始的。"
+        ],
+        trace: [
+          {
+            thread: "main",
+            action: "执行 Notebook second = first",
+            state: "栈帧中出现 second；堆中仍只有一个 Notebook 对象"
+          },
+          {
+            thread: "main",
+            action: "调用 second.addNote(...)",
+            state: "同一个 Notebook 的 notes 字段新增一项"
+          },
+          {
+            thread: "main",
+            action: "调用 changeLocalName(localName)",
+            state: "被调方法得到自己的参数变量；调用者的 localName 保持不变"
+          }
+        ],
+        codeLabel: "Java 21 · ReferenceAndFieldDemo.java",
+        codeKind: "runnable",
+        javaVersion: "Java 21",
+        code: `import java.util.ArrayList;
+import java.util.List;
+
+public final class ReferenceAndFieldDemo {
+    private ReferenceAndFieldDemo() {
+    }
+
+    public static void main(String[] args) {
+        Notebook first = new Notebook("并发");
+        Notebook second = first;
+
+        second.addNote("先写不变量");
+        System.out.println(first.title() + ":" + first.notes());
+
+        String localName = "小林";
+        changeLocalName(localName);
+        System.out.println(localName);
+    }
+
+    private static void changeLocalName(String name) {
+        name = "已改变";
+    }
+
+    private static final class Notebook {
+        private final String title;
+        private final List<String> notes = new ArrayList<>();
+
+        private Notebook(String title) {
+            this.title = title;
+        }
+
+        private void addNote(String note) {
+            notes.add(note);
+        }
+
+        private String title() {
+            return title;
+        }
+
+        private List<String> notes() {
+            return List.copyOf(notes);
+        }
+    }
+}`,
+        runCommand:
+          "javac --release 21 ReferenceAndFieldDemo.java && java ReferenceAndFieldDemo",
+        expectedOutput: ["并发:[先写不变量]", "小林"]
+      },
+      {
+        kind: "mechanism",
+        eyebrow: "第 2 步 · 用位置解释行为",
+        title: "先问数据住在哪里，再问谁能改到它",
+        invariant:
+          "一个方法想要保持的条件，必须由它拥有或明确保护的状态来支撑；不能只凭变量名看起来“局部”就假定安全。",
+        body: [
+          "阅读一个方法时，可以画两层图：调用这个方法的栈帧里有参数和局部变量；对象里有实例字段。局部变量的生命周期通常随方法返回结束，而对象只要仍被引用就可以继续存在。这个模型足以解释绝大多数入门级的引用问题，无须先钻进虚拟机实现细节。",
+          "字段前面的 `private` 只限制其他类能否直接写出字段名，并不自动让对象不可变或线程安全。真正的封装是：只暴露能维持对象规则的方法，并在方法内验证输入、更新字段和暴露安全的结果。",
+          "因此，读代码时请同时圈出两类东西：每次调用独有的局部变量，以及可能被多次调用共同访问的对象字段。后者才是以后需要同步、复制或不可变设计的候选对象。"
+        ],
+        bullets: [
+          "局部变量是一次调用的临时名字，不是“深复制出的对象”。",
+          "实例字段属于对象；两个引用指向同一对象时，看见的是同一份字段。",
+          "方法参数也是局部变量；Java 把参数值复制给被调方法。"
+        ]
+      },
+      {
+        kind: "experiment",
+        eyebrow: "第 3 步 · 让失败成为正常结果",
+        title: "异常不是崩溃按钮，而是方法契约的失败通道",
+        goal:
+          "能把“输入不符合方法要求”转换成一个带信息的异常，并知道 catch 应该处理自己能够恢复或转换的失败。",
+        prediction:
+          "预测三个输入会各自走正常返回还是异常分支：\" 18 \"、\"-1\" 与 null。",
+        observation:
+          "第一个输入得到正常结果；负数与 null 都被转换成带有明确原因的异常输出，而程序没有把无效值伪装为正常年龄。",
+        body: [
+          "`parseAge` 的正常结果是一个非负整数；null、空白或负数不满足这个契约。与其返回含糊的 -1 或吞掉错误，不如抛出能够说明原因的异常。调用者再在自己的边界决定：显示提示、记录日志、改用默认值，还是让失败继续向上交给框架。",
+          "这个例子刻意在 main 中捕获异常，只是为了让你看见输出。生产代码不要写 `catch (Exception ignored)`；那会把真正的失败伪装成成功。也不要为了避免异常而让无效数据静默进入对象状态。"
+        ],
+        codeLabel: "Java 21 · AgeParserDemo.java",
+        codeKind: "runnable",
+        javaVersion: "Java 21",
+        code: `import java.util.Objects;
+
+public final class AgeParserDemo {
+    private AgeParserDemo() {
+    }
+
+    public static void main(String[] args) {
+        printResult(" 18 ");
+        printResult("-1");
+        printResult(null);
+    }
+
+    private static void printResult(String rawAge) {
+        try {
+            System.out.println("年龄 = " + parseAge(rawAge));
+        } catch (IllegalArgumentException | NullPointerException exception) {
+            System.out.println(
+                    exception.getClass().getSimpleName() + ": " + exception.getMessage());
+        }
+    }
+
+    private static int parseAge(String rawAge) {
+        String normalized = Objects.requireNonNull(
+                rawAge,
+                "rawAge 不能为 null").trim();
+        if (normalized.isEmpty()) {
+            throw new IllegalArgumentException("rawAge 不能为空白");
+        }
+
+        int age = Integer.parseInt(normalized);
+        if (age < 0) {
+            throw new IllegalArgumentException("age 不能小于 0");
+        }
+        return age;
+    }
+}`,
+        runCommand:
+          "javac --release 21 AgeParserDemo.java && java AgeParserDemo",
+        expectedOutput: [
+          "年龄 = 18",
+          "IllegalArgumentException: age 不能小于 0",
+          "NullPointerException: rawAge 不能为 null"
+        ]
+      },
+      {
+        kind: "checkpoint",
+        eyebrow: "第 4 步 · 把判断交给测试",
+        title: "JUnit 断言：把“应该正确”写成可执行的句子",
+        body: [
+          "手动运行只能覆盖你恰好输入的几个值。JUnit 中的 `assertEquals` 写出预期结果，`assertThrows` 写出预期失败；测试通过只说明这些明确的契约仍成立，测试失败会把偏差定位到一个可复现的例子。",
+          "下面的测试将被测类放在测试文件的嵌套类中，便于复制运行。真实项目通常把 `RetryLimitParser` 放在 `src/main/java`，把 `RetryLimitParserTest` 放在 `src/test/java`；确认 Maven 项目已经配置 Java 21 和 JUnit 5 后，再运行下方命令。断言的阅读方式不变：先读期望，再读输入，最后读被调用的方法。"
+        ],
+        codeLabel: "Java 21 · JUnit 5 · RetryLimitParserTest.java",
+        codeKind: "runnable",
+        javaVersion: "Java 21",
+        code: `import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+
+final class RetryLimitParserTest {
+    @Test
+    void parsesNonNegativeRetryLimit() {
+        assertEquals(3, RetryLimitParser.parse("3"));
+    }
+
+    @Test
+    void rejectsNegativeRetryLimit() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> RetryLimitParser.parse("-1"));
+
+        assertEquals("retryLimit 不能为负数", exception.getMessage());
+    }
+
+    private static final class RetryLimitParser {
+        private RetryLimitParser() {
+        }
+
+        private static int parse(String rawRetryLimit) {
+            int retryLimit = Integer.parseInt(rawRetryLimit);
+            if (retryLimit < 0) {
+                throw new IllegalArgumentException("retryLimit 不能为负数");
+            }
+            return retryLimit;
+        }
+    }
+}`,
+        runCommand: "mvn -Dtest=RetryLimitParserTest test",
+        expectedOutput: ["Tests run: 2, Failures: 0, Errors: 0"],
+        checkpoint: {
+          prompt:
+            "不看答案，解释第二个测试为什么既检查了异常类型，又检查了异常消息。若只写 assertThrows，还漏掉了什么？",
+          hint:
+            "先把“发生了失败”与“失败是否符合调用方需要的契约”分开。",
+          answer: [
+            "assertThrows 确认无效输入没有被静默接受，并取得异常对象；随后 assertEquals 确认失败原因仍是调用方约定的那一种。",
+            "只检查异常类型仍可能让错误信息、校验位置或业务原因悄悄退化；但也不要为了测试文案而把每个实现细节都冻结。"
+          ],
+          successCriteria: [
+            "能指出 class、main、局部变量、字段和引用各自扮演的角色。",
+            "能解释为什么 second.addNote 会影响 first，而重新给参数 name 赋值不会影响 localName。",
+            "能读懂一个 assertEquals 与一个 assertThrows 分别在声明什么契约。"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    slug: "threads-and-shared-state",
+    week: 1,
+    title: "进程、线程与第一个共享状态错误",
+    dek: "先画清进程、JVM、线程、栈和堆的边界，再亲手复现 count++ 的丢失更新，用 synchronized 写出第一个可证明的单 JVM 修复。",
+    readTime: "48 分钟",
+    status: "published",
+    tags: ["进程", "线程", "共享状态", "竞态条件", "synchronized"],
+    searchTerms: [
+      "进程",
+      "JVM",
+      "线程",
+      "栈",
+      "堆",
+      "count++",
+      "竞态条件",
+      "synchronized",
+      "Thread.join",
+      "JUnit 5"
+    ],
+    keyIdea:
+      "线程安全要保护的是共享业务状态的不变量；先让读—改—写成为一个原子转移，再讨论更高层的并发工具。",
+    learningBlocks: [
+      {
+        kind: "orientation",
+        eyebrow: "第 1 步 · 先画边界",
+        title: "进程、JVM 与线程不是同一个东西",
+        goal:
+          "能够说明一段 Java 服务代码属于哪个进程、哪个 JVM，以及为什么两个线程既能各自执行方法，又能看到同一个对象。",
+        prerequisites: [
+          "已完成第 0 周，能区分局部变量、对象字段与引用。",
+          "先运行下面程序，观察同一进程 ID 下的两个线程名。"
+        ],
+        conceptMap: [
+          {
+            label: "进程",
+            relation: "由操作系统创建；有自己的地址空间、进程 ID 与资源边界"
+          },
+          {
+            label: "JVM",
+            relation: "运行在一个 Java 进程内；加载类并管理 Java 对象"
+          },
+          {
+            label: "线程",
+            relation: "JVM 内的一条执行路径；每条线程有自己的调用栈"
+          },
+          {
+            label: "堆对象",
+            relation: "同一 JVM 的线程可以通过引用共同访问"
+          }
+        ],
+        body: [
+          "程序文件不是进程。你在终端或容器中启动 Java 应用时，操作系统先创建一个进程；JVM 在这个进程内启动并调用 main。一个部署实例通常对应一个进程，但这是一种部署约定，不是 Java 语法本身。",
+          "main 在初始线程上运行。调用 `Thread.start()` 后，JVM 调度另一条线程执行任务；它不是第二个 JVM，也不是第二个独立服务。线程之间共享同一个进程的资源与 JVM 堆，却各自拥有方法调用所需的栈帧。",
+          "“高并发”只说明同时抵达或执行的工作很多，不保证结果正确。我们本课只研究最小问题：两个或多个线程怎样错误地更新同一个 int 字段。"
+        ],
+        codeLabel: "Java 21 · RuntimeBoundaryDemo.java",
+        codeKind: "runnable",
+        javaVersion: "Java 21",
+        code: `import java.util.concurrent.CountDownLatch;
+
+public final class RuntimeBoundaryDemo {
+    private RuntimeBoundaryDemo() {
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        long processId = ProcessHandle.current().pid();
+        System.out.println("process=" + processId
+                + ", thread=" + Thread.currentThread().getName());
+
+        CountDownLatch workerFinished = new CountDownLatch(1);
+        Thread worker = new Thread(() -> {
+            System.out.println("process=" + ProcessHandle.current().pid()
+                    + ", thread=" + Thread.currentThread().getName());
+            workerFinished.countDown();
+        }, "counter-worker");
+
+        worker.start();
+        workerFinished.await();
+        worker.join();
+    }
+}`,
+        runCommand:
+          "javac --release 21 RuntimeBoundaryDemo.java && java RuntimeBoundaryDemo",
+        expectedOutput: [
+          "输出两行；两行 process 的数字相同。",
+          "第一行 thread=main，第二行 thread=counter-worker。"
+        ]
+      },
+      {
+        kind: "misconception",
+        eyebrow: "第 2 步 · 先预测，再运行",
+        title: "四个线程各做 100,000 次 value++，结果一定是 400,000 吗？",
+        goal:
+          "在运行前写下预测，并理解一次恰好得到正确数字不能证明代码线程安全。",
+        prediction:
+          "很多人会预测 actual 总是 400000，因为四个线程“都已经执行了加一”。请先写下你的理由，再运行至少五次。",
+        observation:
+          "你可能看到小于 400000 的 actual，也可能偶尔恰好等于 400000。前者足以证明存在竞态；后者只说明这一次的调度没有把问题暴露出来。",
+        body: [
+          "`value++` 在源码中很短，却不是一个不可分割的业务转移。它需要读出旧值、计算新值、写回字段。若不同线程在这三步之间交错，就可能做了两次工作，最后却只留下了一次增长。",
+          "下面程序用起跑闸门尽量让工作线程同时开始，并用 `join` 确保 main 在读取前等待它们结束。它仍不保证每次都复现错误；真实并发错误恰恰常常如此：偶发，却可以造成已经完成的业务动作被少记。",
+          "把这个例子看成规格问题，而不是“机器太慢”。规格是：所有工作线程结束后，计数必须等于成功调用 increment 的次数。任何小于期望值的结果都是非法状态。"
+        ],
+        invariant:
+          "所有工作线程 join 返回后，value 必须等于所有成功 increment 调用的总次数。",
+        codeLabel: "Java 21 · UnsafeCounterDemo.java",
+        codeKind: "broken-runnable",
+        javaVersion: "Java 21",
+        code: `import java.util.concurrent.CountDownLatch;
+
+public final class UnsafeCounterDemo {
+    private static final int WORKER_COUNT = 4;
+    private static final int INCREMENTS_PER_WORKER = 100_000;
+
+    private UnsafeCounterDemo() {
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        UnsafeCounter counter = new UnsafeCounter();
+        CountDownLatch start = new CountDownLatch(1);
+        Thread[] workers = new Thread[WORKER_COUNT];
+
+        for (int workerIndex = 0; workerIndex < WORKER_COUNT; workerIndex++) {
+            workers[workerIndex] = new Thread(() -> {
+                await(start);
+                for (int increment = 0;
+                        increment < INCREMENTS_PER_WORKER;
+                        increment++) {
+                    counter.increment();
+                }
+            }, "unsafe-worker-" + workerIndex);
+        }
+
+        for (Thread worker : workers) {
+            worker.start();
+        }
+        start.countDown();
+        for (Thread worker : workers) {
+            worker.join();
+        }
+
+        int expected = WORKER_COUNT * INCREMENTS_PER_WORKER;
+        System.out.println("expected=" + expected + ", actual=" + counter.get());
+    }
+
+    private static void await(CountDownLatch latch) {
+        try {
+            latch.await();
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError("启动闸门被中断", exception);
+        }
+    }
+
+    private static final class UnsafeCounter {
+        private int value;
+
+        private void increment() {
+            value++;
+        }
+
+        private int get() {
+            return value;
+        }
+    }
+}`,
+        runCommand:
+          "javac --release 21 UnsafeCounterDemo.java && java UnsafeCounterDemo",
+        expectedOutput: [
+          "每次都输出 expected=400000。",
+          "actual 可能小于 400000；即使偶尔等于 400000，也不能作为安全性证明。"
+        ]
+      },
+      {
+        kind: "experiment",
+        eyebrow: "第 3 步 · 构造最坏交错",
+        title: "对抗性 JUnit 5 测试：让两个线程都先读到 0",
+        goal:
+          "不依赖运气复现丢失更新，并理解“这个测试通过”表示我们成功证明了坏实现会到达错误状态。",
+        prediction:
+          "如果两个线程都在写回前读取 value=0，它们最后各自写入的会是什么值？先不要看断言。",
+        observation:
+          "测试稳定通过，且最终值是 1。它不是在证明实现正确，而是在稳定构造一个违反“两个加一后应为 2”的执行交错。",
+        body: [
+          "压力测试有价值，但它把是否失败交给调度器。学习机制时，我们可以在读取与写回之间放一个 `CyclicBarrier`：两个任务都读完旧值才允许继续。这样测试的目标不是测性能，而是把本来偶发的竞态压缩成可重复的反例。将文件放进已配置 Java 21 和 JUnit 5 的 Maven 项目的 `src/test/java` 后，再运行下方命令。",
+          "请特别留意断言是 `assertEquals(1, counter.get())`。在这份“失败证明”里，1 是预期观察值；它说明两个加一已经被安排成一次丢失更新。修复后，我们会换成测试安全实现且断言为 2。"
+        ],
+        codeLabel: "Java 21 · JUnit 5 · CoordinatedCounterTest.java",
+        codeKind: "broken-runnable",
+        javaVersion: "Java 21",
+        code: `import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import org.junit.jupiter.api.Test;
+
+final class CoordinatedCounterTest {
+    @Test
+    void losesOneUpdateWhenBothThreadsReadBeforeEitherWrites() throws Exception {
+        CoordinatedUnsafeCounter counter = new CoordinatedUnsafeCounter();
+
+        try (ExecutorService executor = Executors.newFixedThreadPool(2)) {
+            Future<?> first = executor.submit(counter::increment);
+            Future<?> second = executor.submit(counter::increment);
+
+            first.get();
+            second.get();
+        }
+
+        assertEquals(1, counter.get());
+    }
+
+    private static final class CoordinatedUnsafeCounter {
+        private final CyclicBarrier bothThreadsRead = new CyclicBarrier(2);
+        private int value;
+
+        private void increment() {
+            int observed = value;
+            awaitBothReaders();
+            value = observed + 1;
+        }
+
+        private int get() {
+            return value;
+        }
+
+        private void awaitBothReaders() {
+            try {
+                bothThreadsRead.await();
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+                throw new AssertionError("测试线程被中断", exception);
+            } catch (BrokenBarrierException exception) {
+                throw new AssertionError("起跑屏障损坏", exception);
+            }
+        }
+    }
+}`,
+        runCommand: "mvn -Dtest=CoordinatedCounterTest test",
+        expectedOutput: [
+          "Tests run: 1, Failures: 0, Errors: 0。",
+          "通过表示反例被稳定复现：两个 increment 的最终值仍是 1。"
+        ]
+      },
+      {
+        kind: "mechanism",
+        eyebrow: "第 4 步 · 解释刚才看见的现象",
+        title: "私有栈保存各自读到的旧值，共享堆字段被最后一次写回覆盖",
+        invariant:
+          "两个已完成的 increment 必须让 value 从 0 变为 2；若最终为 1，说明一次状态转移被覆盖。",
+        body: [
+          "线程 A 与线程 B 各有自己的调用栈，因此各自可以保存局部变量 `observed`。但 `value` 是同一个 Counter 对象的字段；只要两个线程持有这个对象的引用，它们修改的就是同一份状态。",
+          "把 `value++` 展开后，问题就不神秘了：A 读 0，B 也读 0；A 写 1，B 也写 1。没有任何线程做错加法，错误在于“从旧值到新值”的完整转移没有被作为一个整体保护。",
+          "这里先只谈原子性。后续课程会分别讨论可见性、有序性和其他并发 API；不要把还没学的工具当作魔法答案。当前最小目标只是让一次读—改—写不能与另一条同类转移交错。"
+        ],
+        trace: [
+          {
+            thread: "线程 A",
+            action: "读取共享字段 value",
+            state: "堆：value=0；A 栈：observed=0"
+          },
+          {
+            thread: "线程 B",
+            action: "读取同一个共享字段 value",
+            state: "堆：value=0；B 栈：observed=0"
+          },
+          {
+            thread: "线程 A",
+            action: "计算并写回 observed + 1",
+            state: "堆：value=1"
+          },
+          {
+            thread: "线程 B",
+            action: "计算并写回 observed + 1",
+            state: "堆：value=1，而不是 2"
+          }
+        ],
+        bullets: [
+          "局部变量 `observed` 私有，不代表它所读的字段 `value` 私有。",
+          "一次运行没有失败，不代表所有可能交错都安全。",
+          "正确性证明要覆盖允许的交错，而不是只看一次输出。"
+        ]
+      },
+      {
+        kind: "api-decision",
+        eyebrow: "第 5 步 · 先选最小而明确的工具",
+        title: "synchronized：让同一对象上的完整状态转移互斥进行",
+        goal:
+          "知道为什么第一个修复选择 synchronized，而不是先堆叠更复杂的并发 API。",
+        invariant:
+          "对同一个 SynchronizedCounter 对象，任意时刻最多一个线程可以执行 increment 的读—改—写临界区。",
+        body: [
+          "`synchronized` 不是给一个 int 加上“线程安全”标签。它使用一个监视器：同一时刻，只有拿到同一把监视器的线程能进入临界区。把整个 `value++` 放进同一个受保护区域，第二个线程就必须等第一个线程写回后再读取。",
+          "实例同步方法使用当前对象作为监视器。因此所有工作线程必须调用同一个 Counter 实例；如果各自 new 了一个 Counter，它们拿到的是不同监视器，彼此不会协调。临界区应短小，只放维持不变量所需的内存操作，不要把慢速网络或磁盘 I/O 塞进去。",
+          "本课刻意不把 `ConcurrentHashMap`、`AtomicInteger` 或单例模式混进来。ConcurrentHashMap 解决的是映射操作的并发契约，不是任意 int 字段；AtomicInteger 要建立在 CAS 与失败重试的理解上；懒汉、饿汉和 enum 单例回答的是“对象是否只创建一次、如何安全发布”，并不能修复两个线程对同一个计数器的读—改—写。先掌握这一把最小的锁，后面才能准确判断何时该换工具。"
+        ],
+        apiOptions: [
+          {
+            api: "synchronized",
+            useWhen: "同一个 JVM 内，多个线程需要把同一对象的多个读写动作合成一个不可分割的状态转移。",
+            guarantees: "使用同一监视器的临界区互斥；一个线程退出临界区后，后来取得同一监视器的线程可以观察到此前的写入。",
+            doesNotGuarantee: "不同对象、不同 JVM、数据库或网络请求之间的原子性；也不让长时间阻塞操作变得便宜。"
+          }
+        ]
+      },
+      {
+        kind: "implementation",
+        eyebrow: "第 6 步 · 先独立实现，再对照",
+        title: "用 synchronized 写出第一个可验证的安全计数器",
+        task:
+          "先自己写一个 SynchronizedCounter：私有 int 字段、同步 increment、同步 get；再让四个线程对同一个实例各加 100,000 次，并在 join 后检查结果。",
+        constraints: [
+          "不要用 Thread.sleep 猜测线程是否结束；必须使用 join。",
+          "所有工作线程必须共享同一个 SynchronizedCounter 实例。",
+          "同步边界必须覆盖完整的读—改—写，而不是只锁 get 或只锁 set。"
+        ],
+        hints: [
+          "第一层：把 value 声明为私有字段，让外部只能通过方法改变它。",
+          "第二层：给 increment 与 get 加 synchronized；它们会使用同一个 this 监视器。",
+          "第三层：先 start 所有线程，再逐个 join，最后才读取并断言结果。"
+        ],
+        body: [
+          "先暂停，在不看完整实现的情况下写十分钟。你要证明的不是“代码看起来加了锁”，而是：所有线程都使用同一个对象，所有 increment 都必须经过同一监视器，并且 main 在检查前已经等待所有工作完成。",
+          "下面实现保持了与坏例子相同的负载，因此输出差异只来自同步边界。`get` 也同步，使这个对象的读取协议完整；本例中 join 已保证 main 等到写入结束，但统一协议会让以后复用该类时更不容易误用。"
+        ],
+        codeLabel: "Java 21 · SynchronizedCounterDemo.java",
+        codeKind: "runnable",
+        javaVersion: "Java 21",
+        code: `import java.util.ArrayList;
+import java.util.List;
+
+public final class SynchronizedCounterDemo {
+    private static final int WORKER_COUNT = 4;
+    private static final int INCREMENTS_PER_WORKER = 100_000;
+
+    private SynchronizedCounterDemo() {
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        SynchronizedCounter counter = new SynchronizedCounter();
+        List<Thread> workers = new ArrayList<>();
+
+        for (int workerIndex = 0; workerIndex < WORKER_COUNT; workerIndex++) {
+            Thread worker = new Thread(() -> {
+                for (int increment = 0;
+                        increment < INCREMENTS_PER_WORKER;
+                        increment++) {
+                    counter.increment();
+                }
+            }, "safe-worker-" + workerIndex);
+            workers.add(worker);
+        }
+
+        for (Thread worker : workers) {
+            worker.start();
+        }
+        for (Thread worker : workers) {
+            worker.join();
+        }
+
+        int expected = WORKER_COUNT * INCREMENTS_PER_WORKER;
+        int actual = counter.get();
+        if (actual != expected) {
+            throw new AssertionError("expected=" + expected + ", actual=" + actual);
+        }
+        System.out.println("expected=" + expected + ", actual=" + actual);
+    }
+
+    private static final class SynchronizedCounter {
+        private int value;
+
+        private synchronized void increment() {
+            value++;
+        }
+
+        private synchronized int get() {
+            return value;
+        }
+    }
+}`,
+        runCommand:
+          "javac --release 21 SynchronizedCounterDemo.java && java SynchronizedCounterDemo",
+        expectedOutput: ["expected=400000, actual=400000"]
+      },
+      {
+        kind: "distributed-boundary",
+        eyebrow: "第 7 步 · 不要把 JVM 内的保证误当成集群保证",
+        title: "三个实例各自同步，为什么全局计数仍可能错？",
+        localGuarantee:
+          "同一个 JVM 中，所有线程通过同一个 SynchronizedCounter 对象调用方法时，计数不会因本地线程交错而丢失更新。",
+        breaksWith:
+          "部署三个服务实例后会有三个进程、三个 JVM、三个堆和三个 Counter 对象。每个实例都可以安全地从 0 计到 10，但集群实际上已经处理了 30 次；它们没有共享同一把 Java 监视器。",
+        alternatives: [
+          "若需要全局硬性上限，让一个权威存储执行带条件的更新，并把成功或失败作为唯一结果。",
+          "若状态天然可按业务键划分，让同一键始终交给一个明确的单写者或分区所有者。",
+          "先写清需要的是强一致的准入、最终汇总的指标，还是允许短暂超额的近似计数；三者的协议和成本不同。"
+        ],
+        body: [
+          "本地同步与分布式一致性解决的不是同一层问题。`synchronized` 的协调对象是内存中的一个监视器，而内存不会跨越进程边界复制成同一份。容器重启、扩容、负载均衡和网络分区都会让“某一个本地对象”不再是全局权威。",
+          "这不是说本地锁没有价值。每个实例仍必须先保证自己的内存状态不被本地线程损坏；然后再根据业务不变量选择跨实例协议。先分清边界，才能避免把一把 JVM 锁误用成集群锁。"
+        ]
+      },
+      {
+        kind: "checkpoint",
+        eyebrow: "第 8 步 · 不看代码复述",
+        title: "用自己的话证明：哪里共享、哪里私有、哪里失效",
+        body: [
+          "先口头回答，再展开提示。若你能不用“因为 synchronized 很安全”这种空泛说法，而是指出对象、监视器、读—改—写与进程边界，你就已经在建立工程上的因果模型。",
+          "最后把 SafeCounter 中的 synchronized 暂时删掉，重新运行；再加回来。这个小破坏实验比背定义更能让你记住：修复保护的是一个不变量，不是一行语法。"
+        ],
+        checkpoint: {
+          prompt:
+            "请画出线程 A、线程 B 的两份栈帧和一个 Counter 堆对象，解释 value++ 为什么能从 0 变成 1；随后说明 synchronized 改变了哪一步。最后回答：部署三个实例时，这个保证为什么失效？",
+          hint:
+            "按“局部 observed 在哪里、字段 value 在哪里、谁拿的是同一把监视器、哪个边界不再共享内存”的顺序回答。",
+          answer: [
+            "A 与 B 各自的栈帧可同时保存 observed=0，而两者都写同一个 Counter.value。没有互斥时，两次写回都可能是 1。",
+            "synchronized 要求使用同一 Counter 实例的线程轮流完成读—改—写，因此后进入的线程会读到前一个线程写好的新值。",
+            "多实例拥有不同 JVM 堆和不同监视器；本地同步不能决定另一个进程何时读取或写入其本地计数。"
+          ],
+          successCriteria: [
+            "能区分进程、JVM、线程、线程栈和共享堆对象。",
+            "能给出一个具体交错，而不是只说“多线程会乱”。",
+            "能说明 synchronized 的原子边界是同一对象监视器保护的完整临界区。",
+            "能明确说出该保证止于单 JVM，并提出至少一种跨实例的权威状态方案。"
+          ]
+        }
+      }
+    ],
     sections: [
       {
         eyebrow: "运行时基础",
