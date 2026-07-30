@@ -19,7 +19,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html
+      data-scroll-behavior="smooth"
+      lang="zh-CN"
+      suppressHydrationWarning
+    >
       <body>
         <Script id="theme-init" strategy="beforeInteractive">
           {`try{const t=localStorage.getItem("cloverdew-theme");document.documentElement.dataset.theme=t||"light"}catch(e){}`}
