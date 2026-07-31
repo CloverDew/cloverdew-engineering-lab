@@ -66,6 +66,11 @@ export type LessonLearningBlock = {
   code?: string;
   codeLabel?: string;
   codeKind?: "runnable" | "broken-runnable" | "excerpt" | "pseudocode";
+  /**
+   * 代码块实际依赖的运行时。未设置时沿用 Java 课程的 `javaVersion`。
+   * Flink、SQL、YAML 与命令行实验不应被错误标成普通 Java 示例。
+   */
+  runtime?: string;
   javaVersion?: string;
   runCommand?: string;
   expectedOutput?: string[];
@@ -105,6 +110,10 @@ export type LessonReference = {
 export type Lesson = {
   slug: string;
   week: number;
+  /**
+   * 旧课程默认属于 Java 并发路径；新增路径必须显式声明，避免课次导航串线。
+   */
+  track?: "java-concurrency" | "flink-mastery";
   title: string;
   dek: string;
   readTime: string;
@@ -112,6 +121,10 @@ export type Lesson = {
   tags: string[];
   searchTerms?: string[];
   keyIdea: string;
+  /**
+   * 为 true 时，动手题的参考实现默认折叠，先让学习者独立推导。
+   */
+  codeFirst?: boolean;
   sections: LessonSection[];
   questions: LessonQuestion[];
   learningBlocks?: LessonLearningBlock[];

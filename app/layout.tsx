@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s · Cloverdew 工程实验室"
   },
   description:
-    "以项目驱动的深入课程，讲解 Java 并发、查询系统、流式基础设施和面向 AI 的可信数据。"
+    "以实验和系统不变量驱动的深入课程，讲解 Java 并发、Apache Flink、查询系统与可信数据基础设施。"
 };
 
 export default function RootLayout({

@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowIcon } from "@/components/icons";
-import { phases, publishedLessons } from "@/lib/content";
+import { phases } from "@/lib/content";
+import { getPublishedLessonsByTrack } from "@/lib/curriculum";
 
 export const metadata: Metadata = {
-  title: "24 周学习路线图",
-  description: "Cloverdew 工程实验室的完整学习路线图。"
+  title: "24 周 Java 与系统工程学习路线图",
+  description: "Cloverdew 工程实验室的 24 周 Java 并发与系统工程主线。"
 };
 
 const months = [
@@ -78,7 +79,7 @@ const months = [
 ];
 
 export default function RoadmapPage() {
-  const firstLesson = publishedLessons[0];
+  const firstLesson = getPublishedLessonsByTrack("java-concurrency")[0];
   const startLabel =
     firstLesson.week === 0 ? "从准备单元开始" : "从第 1 周开始";
 
@@ -94,7 +95,8 @@ export default function RoadmapPage() {
           </h1>
           <p>
             先用一个不计入 24 周的 Java 阅读桥接单元补齐代码阅读坐标，再进入每周
-            两小时的深度练习。生活打断学习时，计划随之顺延；它不会制造补课债务。
+            两小时的深度练习。这里始终是 Java 与系统工程主线；Flink
+            精通内容拥有独立轨道，不挤占这 24 周。生活打断学习时，计划随之顺延。
           </p>
         </div>
       </section>
@@ -159,9 +161,14 @@ export default function RoadmapPage() {
               </div>
             ))}
           </div>
-          <Link className="button button-primary" href={`/lessons/${firstLesson.slug}`}>
-            {startLabel} <ArrowIcon />
-          </Link>
+          <div className="roadmap-actions">
+            <Link className="button button-primary" href={`/lessons/${firstLesson.slug}`}>
+              {startLabel} <ArrowIcon />
+            </Link>
+            <Link className="button button-quiet" href="/flink">
+              查看独立 Flink 精通轨道 <ArrowIcon />
+            </Link>
+          </div>
         </div>
       </section>
     </>

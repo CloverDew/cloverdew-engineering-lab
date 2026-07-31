@@ -51,7 +51,12 @@ const moduleUrl = `data:text/javascript;base64,${Buffer.from(transpiled).toStrin
 const { lessons } = await import(moduleUrl);
 
 const snippets = lessons
-  .filter((lesson) => lesson.week >= 2 && lesson.week <= 8)
+  .filter(
+    (lesson) =>
+      (lesson.track ?? "java-concurrency") === "java-concurrency" &&
+      lesson.week >= 2 &&
+      lesson.week <= 8
+  )
   .flatMap((lesson) =>
     (lesson.learningBlocks ?? []).flatMap((block, index) =>
       block.code &&

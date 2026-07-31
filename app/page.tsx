@@ -1,10 +1,17 @@
 import Link from "next/link";
 import { ArrowIcon, CheckIcon } from "@/components/icons";
 import { LessonFilter } from "@/components/lesson-filter";
-import { lessons, phases, publishedLessons } from "@/lib/content";
+import { phases } from "@/lib/content";
+import {
+  getPublishedLessonsByTrack,
+  lessonSummaries,
+  publishedLessons
+} from "@/lib/curriculum";
 
 export default function HomePage() {
-  const current = publishedLessons[0];
+  const current = getPublishedLessonsByTrack("java-concurrency")[0];
+  const flinkPublishedLessons =
+    getPublishedLessonsByTrack("flink-mastery");
   const startLabel = current.week === 0 ? "从准备单元开始" : "从第 1 周开始";
   const featuredNumber = current.week.toString().padStart(2, "0");
 
@@ -15,7 +22,7 @@ export default function HomePage() {
           <div className="hero-copy">
             <div className="kicker">
               <span className="status-dot" />
-              为期 24 周的系统工程学习路径
+              Java 并发主线 · Flink 精通轨道
             </div>
             <h1>
               读懂代码，
@@ -23,23 +30,23 @@ export default function HomePage() {
               <em>掌控系统。</em>
             </h1>
             <p className="hero-dek">
-              以实验为先的深入课程，帮助你建立 Java 并发基础，并将这套
-              推理方法带入查询引擎、流式系统和面向 AI 的可信数据基础设施。
+              先用实验和反例证明 Java 并发正确性，再沿着独立的 Flink
+              高级轨道进入运行时、状态、时间、检查点与端到端一致性的真实边界。
             </p>
             <div className="hero-actions">
               <Link className="button button-primary" href={`/lessons/${current.slug}`}>
                 {startLabel} <ArrowIcon />
               </Link>
-              <Link className="button button-quiet" href="/roadmap">
-                查看学习路线
+              <Link className="button button-quiet" href="/flink">
+                进入 Flink 精通轨道
               </Link>
             </div>
             <div className="hero-proof">
               <span>
-                <CheckIcon /> 每周 2 小时
+                <CheckIcon /> 24 周 Java 主线
               </span>
               <span>
-                <CheckIcon /> 一个累积项目
+                <CheckIcon /> 12 个 Flink 深度模块
               </span>
               <span>
                 <CheckIcon /> 证据胜过熟悉感
@@ -51,14 +58,14 @@ export default function HomePage() {
               <span />
               <span />
               <span />
-              <small>querygate://当前学习路径</small>
+              <small>cloverdew://系统学习契约</small>
             </div>
             <div className="terminal-body">
               <p className="terminal-comment">// 当前目标</p>
               <p>
                 <span className="terminal-key">证明</span>(
                 <span className="terminal-string">
-                  &quot;并发正确性&quot;
+                  &quot;系统行为&quot;
                 </span>
                 );
               </p>
@@ -102,32 +109,48 @@ export default function HomePage() {
         <div className="shell">
           <div className="section-heading split-heading">
             <div>
-              <p className="eyebrow">当前学习路径</p>
-              <h2>先理解失败，再选择 API。</h2>
+              <p className="eyebrow">两条独立学习轨道</p>
+              <h2>先建立证明能力，再深入框架机制。</h2>
             </div>
             <p>
-              每节课都将具体实验、可展开的答案、Java API 取舍、失败示例与
-              面向分布式系统的生产实践连接起来。
+              Java 主线保留完整的 24 周 QueryGate 计划；Flink
+              轨道面向已有作业开发经验的工程师，以运行时不变量、故障恢复和生产证据为主。
             </p>
           </div>
-          <Link className="featured-lesson" href={`/lessons/${current.slug}`}>
-            <div className="featured-number">{featuredNumber}</div>
-            <div>
-              <p className="eyebrow">接下来阅读 · {current.readTime}</p>
-              <h3>{current.title}</h3>
-              <p>{current.dek}</p>
-            </div>
-            <span className="round-arrow">
-              <ArrowIcon size={22} />
-            </span>
-          </Link>
+          <div className="track-entry-grid">
+            <Link className="featured-lesson" href={`/lessons/${current.slug}`}>
+              <div className="featured-number">{featuredNumber}</div>
+              <div>
+                <p className="eyebrow">Java 并发主线 · {current.readTime}</p>
+                <h3>{current.title}</h3>
+                <p>{current.dek}</p>
+              </div>
+              <span className="round-arrow">
+                <ArrowIcon size={22} />
+              </span>
+            </Link>
+            <Link className="flink-track-entry" href="/flink">
+              <div className="flink-track-entry-meta">
+                <span>高级独立轨道</span>
+                <span>{flinkPublishedLessons.length} 个模块</span>
+              </div>
+              <h3>从“会写 Flink 作业”走到“能解释运行时为何正确”</h3>
+              <p>
+                追踪数据、状态、时间和 barrier 在失败前后的移动方式，并用实验验证
+                checkpoint、反压、重调度与端到端一致性的边界。
+              </p>
+              <strong>
+                查看完整 Flink 路线 <ArrowIcon />
+              </strong>
+            </Link>
+          </div>
         </div>
       </section>
 
       <section className="section phase-section">
         <div className="shell">
           <div className="section-heading">
-            <p className="eyebrow">学习主线</p>
+            <p className="eyebrow">Java 主线 · 24 周</p>
             <h2>一个系统，三层责任。</h2>
           </div>
           <div className="phase-grid">
@@ -152,17 +175,17 @@ export default function HomePage() {
             <div>
               <p className="eyebrow">课程库</p>
               <h2>
-                从读懂 Java，
+                从 Java 并发，
                 <br />
-                到证明并发正确性。
+                到 Flink 运行时。
               </h2>
             </div>
             <p>
-              目前已有 {publishedLessons.length} 节可学习内容，包含一个准备单元。
-              后续课程保持可见，让学习顺序清晰，同时不造成负担。
+              目前共有 {publishedLessons.length} 节已发布内容，分属 Java
+              并发主线与 Flink 精通轨道。可按轨道、状态或概念筛选。
             </p>
           </div>
-          <LessonFilter lessons={lessons} />
+          <LessonFilter lessons={lessonSummaries} />
         </div>
       </section>
 

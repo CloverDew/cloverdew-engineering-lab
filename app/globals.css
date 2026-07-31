@@ -511,6 +511,72 @@ a {
   margin: 0;
 }
 
+.track-entry-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+}
+
+.flink-track-entry {
+  background:
+    radial-gradient(circle at 88% 12%, rgba(205, 255, 106, 0.16), transparent 32%),
+    var(--code);
+  border: 1px solid color-mix(in srgb, var(--lime) 28%, transparent);
+  border-radius: var(--radius);
+  color: var(--code-ink);
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  transition: border 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.flink-track-entry:hover {
+  border-color: color-mix(in srgb, var(--lime) 62%, transparent);
+  box-shadow: 0 18px 44px rgba(8, 15, 13, 0.2);
+  transform: translateY(-3px);
+}
+
+.flink-track-entry-meta {
+  color: #91a69e;
+  display: flex;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  justify-content: space-between;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.flink-track-entry-meta span:first-child {
+  color: var(--lime);
+  font-weight: 800;
+}
+
+.flink-track-entry h3 {
+  color: white;
+  font-size: 27px;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  margin: 35px 0 12px;
+}
+
+.flink-track-entry > p {
+  color: #aebdb7;
+  font-size: 14px;
+  line-height: 1.72;
+  margin: 0;
+}
+
+.flink-track-entry > strong {
+  align-items: center;
+  border-top: 1px solid #34413d;
+  color: var(--lime);
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 22px;
+}
+
 .round-arrow {
   align-items: center;
   border: 1px solid rgba(255, 255, 255, 0.45);
@@ -626,6 +692,13 @@ a {
   padding: 3px;
 }
 
+.library-filter-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .filter-group button {
   background: transparent;
   border: 0;
@@ -675,6 +748,7 @@ a.lesson-card:hover {
 .lesson-card-topline {
   color: var(--ink-soft);
   display: flex;
+  gap: 12px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 11px;
   justify-content: space-between;
@@ -685,6 +759,10 @@ a.lesson-card:hover {
 .lesson-card-topline span:first-child {
   color: var(--blue);
   font-weight: 800;
+}
+
+.lesson-card-topline span:last-child {
+  flex-shrink: 0;
 }
 
 .lesson-card h3 {
@@ -816,7 +894,9 @@ a.lesson-card:hover {
 
 .footer-links {
   display: flex;
+  flex-wrap: wrap;
   gap: 22px;
+  justify-content: flex-end;
 }
 
 .footer-links a:hover {
@@ -953,6 +1033,12 @@ a.lesson-card:hover {
 .roadmap-phases {
   background: var(--paper-deep);
   border-top: 1px solid var(--line);
+}
+
+.roadmap-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .phase-question-list {
@@ -2370,8 +2456,302 @@ a.lesson-card:hover {
   margin-bottom: 26px;
 }
 
+.flink-hero {
+  background: var(--code);
+  border-bottom: 1px solid #34413d;
+  color: var(--code-ink);
+  overflow: hidden;
+  padding: 104px 0 92px;
+  position: relative;
+}
+
+.flink-hero::before {
+  background-image:
+    linear-gradient(rgba(205, 255, 106, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(205, 255, 106, 0.055) 1px, transparent 1px);
+  background-size: 32px 32px;
+  content: "";
+  inset: 0;
+  mask-image: linear-gradient(90deg, transparent, black 58%, black);
+  pointer-events: none;
+  position: absolute;
+}
+
+.flink-hero-grid {
+  align-items: center;
+  display: grid;
+  gap: 76px;
+  grid-template-columns: minmax(0, 1.12fr) minmax(340px, 0.88fr);
+  position: relative;
+}
+
+.flink-hero .eyebrow,
+.flink-version-card .eyebrow {
+  color: var(--lime);
+}
+
+.flink-hero h1 {
+  color: white;
+  font-size: clamp(52px, 6.4vw, 86px);
+  letter-spacing: -0.065em;
+  line-height: 0.98;
+  margin: 12px 0 28px;
+}
+
+.flink-hero h1 em {
+  color: var(--lime);
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+}
+
+.flink-hero-dek {
+  color: #aebdb7;
+  font-size: 18px;
+  line-height: 1.75;
+  margin: 0;
+  max-width: 720px;
+}
+
+.button-dark-quiet {
+  background: #26312d;
+  border-color: #465650;
+  color: var(--code-ink);
+}
+
+.button-dark-quiet:hover {
+  background: #303d38;
+  border-color: #6b7f77;
+}
+
+.flink-version-card {
+  background: rgba(38, 49, 45, 0.84);
+  border: 1px solid #465650;
+  border-radius: 20px;
+  box-shadow: 18px 20px 0 rgba(205, 255, 106, 0.08);
+  padding: 31px;
+}
+
+.flink-version-card h2 {
+  color: white;
+  font-size: 31px;
+  letter-spacing: -0.04em;
+  line-height: 1.12;
+  margin: 0 0 15px;
+}
+
+.flink-version-card > p:not(.eyebrow) {
+  color: #aebdb7;
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.flink-version-card ul {
+  border-top: 1px solid #465650;
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 22px 0 0;
+}
+
+.flink-version-card li {
+  align-items: flex-start;
+  color: #c7d3ce;
+  display: flex;
+  font-size: 12px;
+  gap: 9px;
+  line-height: 1.55;
+}
+
+.flink-version-card li svg {
+  color: var(--lime);
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.flink-positioning {
+  border-bottom: 1px solid var(--line);
+}
+
+.flink-modules-section {
+  background: var(--paper-deep);
+  scroll-margin-top: 74px;
+}
+
+.flink-module-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.flink-module-grid > li {
+  min-width: 0;
+}
+
+.flink-module-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 470px;
+  padding: 28px;
+  transition: border 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.flink-module-card:hover {
+  border-color: color-mix(in srgb, var(--blue) 58%, var(--line));
+  box-shadow: var(--shadow);
+  transform: translateY(-3px);
+}
+
+.flink-module-index {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.flink-module-index span {
+  color: var(--blue);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.flink-module-index small {
+  color: var(--ink-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+}
+
+.flink-module-card h3 {
+  font-size: 28px;
+  letter-spacing: -0.04em;
+  line-height: 1.14;
+  margin: 34px 0 12px;
+}
+
+.flink-module-card > p {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.flink-module-card > ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  list-style: none;
+  margin: 22px 0;
+  padding: 0;
+}
+
+.flink-module-card > ul li {
+  background: color-mix(in srgb, var(--blue) 7%, var(--paper-deep));
+  border: 1px solid color-mix(in srgb, var(--blue) 16%, var(--line));
+  border-radius: 999px;
+  color: var(--blue-dark);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  padding: 5px 9px;
+}
+
+.flink-module-outcome {
+  border-top: 1px solid var(--line);
+  margin-top: auto;
+  padding-top: 19px;
+}
+
+.flink-module-outcome span {
+  color: var(--ink-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.flink-module-outcome p {
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.6;
+  margin: 7px 0 0;
+}
+
+.flink-module-card > strong {
+  align-items: center;
+  color: var(--blue);
+  display: flex;
+  font-size: 12px;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.flink-mastery-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.flink-mastery-grid article {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--blue);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.flink-mastery-grid article > span {
+  color: var(--blue);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.flink-mastery-grid h3 {
+  font-size: 25px;
+  letter-spacing: -0.035em;
+  margin: 34px 0 10px;
+}
+
+.flink-mastery-grid p {
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.68;
+  margin: 0;
+}
+
+.flink-final-cta {
+  align-items: center;
+  background: var(--code);
+  border-radius: 20px;
+  color: white;
+  display: flex;
+  gap: 40px;
+  justify-content: space-between;
+  margin-top: 62px;
+  padding: 34px;
+}
+
+.flink-final-cta .eyebrow {
+  color: var(--lime);
+  margin-bottom: 8px;
+}
+
+.flink-final-cta h2 {
+  font-size: clamp(25px, 3vw, 37px);
+  letter-spacing: -0.04em;
+  line-height: 1.12;
+  margin: 0;
+}
+
 @media (max-width: 900px) {
   .hero-grid,
+  .flink-hero-grid,
   .project-grid,
   .state-section .shell {
     gap: 48px;
@@ -2382,7 +2762,19 @@ a.lesson-card:hover {
     inset: 50% 0 0;
   }
 
+  .main-nav {
+    gap: 18px;
+  }
+
+  .main-nav a {
+    font-size: 13px;
+  }
+
   .phase-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .track-entry-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2416,6 +2808,10 @@ a.lesson-card:hover {
 
   .invariant-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .flink-mastery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .article-layout {
@@ -2503,16 +2899,54 @@ a.lesson-card:hover {
     flex-direction: column;
   }
 
+  .library-filter-groups {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .search-field {
     flex-basis: auto;
   }
 
   .filter-group {
     align-self: start;
+    flex-wrap: wrap;
   }
 
   .lesson-grid {
     grid-template-columns: 1fr;
+  }
+
+  .flink-hero {
+    padding: 72px 0 66px;
+  }
+
+  .flink-hero h1 {
+    font-size: 49px;
+  }
+
+  .flink-hero-dek {
+    font-size: 16px;
+  }
+
+  .flink-version-card {
+    box-shadow: 9px 10px 0 rgba(205, 255, 106, 0.08);
+    padding: 24px;
+  }
+
+  .flink-module-grid,
+  .flink-mastery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .flink-module-card {
+    min-height: 0;
+  }
+
+  .flink-final-cta {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 26px;
   }
 
   .manifesto {
@@ -2534,6 +2968,10 @@ a.lesson-card:hover {
     display: flex;
     flex-direction: column;
     gap: 20px;
+  }
+
+  .footer-links {
+    justify-content: flex-start;
   }
 
   .page-hero,

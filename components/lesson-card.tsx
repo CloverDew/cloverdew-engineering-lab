@@ -1,17 +1,21 @@
 import Link from "next/link";
 import { ArrowIcon } from "@/components/icons";
-import type { Lesson } from "@/lib/content";
+import {
+  getLessonTrackLabel,
+  getLessonUnitLabel,
+  type LessonSummary
+} from "@/lib/curriculum-meta";
 
-export function LessonCard({ lesson }: { lesson: Lesson }) {
-  const unitLabel =
-    lesson.week === 0
-      ? "准备单元"
-      : `第 ${lesson.week.toString().padStart(2, "0")} 周`;
+export function LessonCard({ lesson }: { lesson: LessonSummary }) {
+  const unitLabel = getLessonUnitLabel(lesson);
+  const trackLabel = getLessonTrackLabel(lesson);
 
   const content = (
     <>
       <div className="lesson-card-topline">
-        <span>{unitLabel}</span>
+        <span>
+          {trackLabel} · {unitLabel}
+        </span>
         <span>{lesson.readTime}</span>
       </div>
       <h3>{lesson.title}</h3>

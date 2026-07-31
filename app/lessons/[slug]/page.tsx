@@ -14,7 +14,16 @@ import {
   LessonStepNavigation
 } from "@/components/lesson-step-navigation";
 import { ProgressButton } from "@/components/progress-button";
-import { getLesson, publishedLessons } from "@/lib/content";
+import {
+  getLesson,
+  getLessonsByTrack,
+  getLessonSubjectLabel,
+  getLessonTrack,
+  getLessonTrackHref,
+  getLessonUnitLabel,
+  publishedLessons,
+  shouldRevealLessonCodeAfterAttempt
+} from "@/lib/curriculum";
 
 type LessonPageProps = {
   params: Promise<{ slug: string }>;
@@ -42,10 +51,12 @@ export default async function LessonPage({ params }: LessonPageProps) {
     notFound();
   }
 
-  const index = publishedLessons.findIndex((item) => item.slug === lesson.slug);
-  const previous = index > 0 ? publishedLessons[index - 1] : null;
+  const track = getLessonTrack(lesson);
+  const trackLessons = getLessonsByTrack(track, publishedLessons);
+  const index = trackLessons.findIndex((item) => item.slug === lesson.slug);
+  const previous = index > 0 ? trackLessons[index - 1] : null;
   const next =
-    index < publishedLessons.length - 1 ? publishedLessons[index + 1] : null;
+    index < trackLessons.length - 1 ? trackLessons[index + 1] : null;
   const learningBlocks = lesson.learningBlocks ?? [];
   const hasLearningBlocks = learningBlocks.length > 0;
   const checkpointPrompts = learningBlocks.flatMap((block) =>
@@ -57,11 +68,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
       : learningBlocks
           .flatMap((block) => (block.goal ? [block.goal] : []))
           .slice(0, 3);
-  const unitLabel =
-    lesson.week === 0
-      ? "准备单元"
-      : `第 ${lesson.week.toString().padStart(2, "0")} 周`;
-  const subjectLabel = lesson.week === 0 ? "Java 阅读基础" : "Java 并发";
+  const unitLabel = getLessonUnitLabel(lesson);
+  const subjectLabel = getLessonSubjectLabel(lesson);
+  const trackHref = getLessonTrackHref(lesson);
+  const trackLabel =
+    track === "flink-mastery" ? "Flink 精通路线" : "24 周学习路线";
   const navigationItems: LessonNavigationItem[] = hasLearningBlocks
     ? [
         ...learningBlocks.map((block, blockIndex) => ({
@@ -139,7 +150,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
             <>
               <LearningBlocks
                 blocks={learningBlocks}
-                codeFirst={lesson.week >= 2}
+                codeFirst={shouldRevealLessonCodeAfterAttempt(lesson)}
               />
               {lesson.references?.length ? (
                 <section
@@ -353,10 +364,10 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 </strong>
               </Link>
             ) : (
-              <Link href="/roadmap">
+              <Link href={trackHref}>
                 <span>继续学习</span>
                 <strong>
-                  查看学习路线 <ArrowIcon />
+                  查看{trackLabel} <ArrowIcon />
                 </strong>
               </Link>
             )}

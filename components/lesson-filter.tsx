@@ -2,32 +2,54 @@
 
 import { useMemo, useState } from "react";
 import { LessonCard } from "@/components/lesson-card";
-import type { Lesson } from "@/lib/content";
+import {
+  getLessonTrack,
+  getLessonTrackLabel,
+  type LessonSummary,
+  type LessonTrack
+} from "@/lib/curriculum-meta";
 
-export function LessonFilter({ lessons }: { lessons: Lesson[] }) {
+export function LessonFilter({
+  lessons
+}: {
+  lessons: readonly LessonSummary[];
+}) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "published" | "upcoming">("all");
+  const [track, setTrack] = useState<"all" | LessonTrack>("all");
   const filterLabels = {
-    all: "全部",
+    all: "全部状态",
     published: "已发布",
     upcoming: "即将推出"
+  };
+  const trackLabels = {
+    all: "全部轨道",
+    "java-concurrency": "Java 并发",
+    "flink-mastery": "Flink 精通"
   };
 
   const visible = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     return lessons.filter((lesson) => {
       const matchesStatus = filter === "all" || lesson.status === filter;
+      const matchesTrack =
+        track === "all" || getLessonTrack(lesson) === track;
       const haystack = [
         lesson.title,
         lesson.dek,
+        getLessonTrackLabel(lesson),
         ...lesson.tags,
         ...(lesson.searchTerms ?? [])
       ]
         .join(" ")
         .toLowerCase();
-      return matchesStatus && (!normalized || haystack.includes(normalized));
+      return (
+        matchesStatus &&
+        matchesTrack &&
+        (!normalized || haystack.includes(normalized))
+      );
     });
-  }, [filter, lessons, query]);
+  }, [filter, lessons, query, track]);
 
   return (
     <>
@@ -45,17 +67,33 @@ export function LessonFilter({ lessons }: { lessons: Lesson[] }) {
             value={query}
           />
         </label>
-        <div aria-label="课程状态" className="filter-group" role="group">
-          {(["all", "published", "upcoming"] as const).map((item) => (
-            <button
-              className={filter === item ? "active" : ""}
-              key={item}
-              onClick={() => setFilter(item)}
-              type="button"
-            >
-              {filterLabels[item]}
-            </button>
-          ))}
+        <div className="library-filter-groups">
+          <div aria-label="课程轨道" className="filter-group" role="group">
+            {(["all", "java-concurrency", "flink-mastery"] as const).map(
+              (item) => (
+                <button
+                  className={track === item ? "active" : ""}
+                  key={item}
+                  onClick={() => setTrack(item)}
+                  type="button"
+                >
+                  {trackLabels[item]}
+                </button>
+              )
+            )}
+          </div>
+          <div aria-label="课程状态" className="filter-group" role="group">
+            {(["all", "published", "upcoming"] as const).map((item) => (
+              <button
+                className={filter === item ? "active" : ""}
+                key={item}
+                onClick={() => setFilter(item)}
+                type="button"
+              >
+                {filterLabels[item]}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       <div className="lesson-grid">

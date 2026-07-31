@@ -130,7 +130,9 @@ function DetailContent({
 }
 
 function getCodeLabel(block: LessonLearningBlock) {
-  const runtime = block.javaVersion
+  const runtime = block.runtime
+    ? block.runtime
+    : block.javaVersion
     ? block.javaVersion.startsWith("Java ")
       ? block.javaVersion
       : `Java ${block.javaVersion}`
@@ -147,6 +149,12 @@ function getCodeLabel(block: LessonLearningBlock) {
 
 function getCodeKindLabel(codeKind?: string) {
   return codeKind ? (codeKindLabels[codeKind] ?? codeKind) : undefined;
+}
+
+function getRunCommandLabel(block: LessonLearningBlock) {
+  return block.runtime?.includes("Flink")
+    ? "实验验收命令（完成本课 Lab 后）"
+    : "运行命令";
 }
 
 function ConceptMap({
@@ -444,7 +452,10 @@ function LearningBlock({
 
       {block.runCommand &&
         (block.kind !== "implementation" || !codeFirst) && (
-        <CodeBlock code={block.runCommand} label="运行命令" />
+        <CodeBlock
+          code={block.runCommand}
+          label={getRunCommandLabel(block)}
+        />
       )}
 
       {block.expectedOutput &&
@@ -515,7 +526,10 @@ function LearningBlock({
               label={getCodeLabel(block)}
             />
             {block.runCommand && (
-              <CodeBlock code={block.runCommand} label="运行命令" />
+              <CodeBlock
+                code={block.runCommand}
+                label={getRunCommandLabel(block)}
+              />
             )}
             {block.expectedOutput && (
               <div className="experiment-output">

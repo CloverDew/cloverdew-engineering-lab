@@ -9,6 +9,7 @@
     "package:site": "npm run build:worker && node scripts/package-site.mjs",
     "preview": "opennextjs-cloudflare preview",
     "typecheck": "tsc --noEmit",
+    "validate:course-content": "node scripts/validate-course-content.mjs",
     "validate:lesson-java": "node scripts/validate-lesson-java.mjs --run"
   },
   "dependencies": {
