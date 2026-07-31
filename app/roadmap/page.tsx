@@ -87,7 +87,11 @@ export default function RoadmapPage() {
       <section className="page-hero">
         <div className="shell narrow">
           <p className="eyebrow">24 个有效学习周 · 48 个专注小时</p>
-          <h1>通向系统所有权的窄而深之路。</h1>
+          <h1>
+            通向系统所有权的
+            <br />
+            窄而深之路。
+          </h1>
           <p>
             先用一个不计入 24 周的 Java 阅读桥接单元补齐代码阅读坐标，再进入每周
             两小时的深度练习。生活打断学习时，计划随之顺延；它不会制造补课债务。
@@ -128,7 +132,7 @@ export default function RoadmapPage() {
                   {item.weeks.map((week, index) => (
                     <li key={week}>
                       <span>
-                        第 {(Number(item.month) - 1) * 4 + index + 1} 周
+                        第{(Number(item.month) - 1) * 4 + index + 1}周
                       </span>
                       {week}
                     </li>

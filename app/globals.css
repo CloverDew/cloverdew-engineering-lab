@@ -934,7 +934,8 @@ a.lesson-card:hover {
   display: inline-block;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 10px;
-  width: 34px;
+  white-space: nowrap;
+  width: 40px;
 }
 
 .month-gate {

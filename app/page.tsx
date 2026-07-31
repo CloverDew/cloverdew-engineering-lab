@@ -18,7 +18,7 @@ export default function HomePage() {
               为期 24 周的系统工程学习路径
             </div>
             <h1>
-              读懂代码。
+              读懂代码，
               <br />
               <em>掌控系统。</em>
             </h1>
@@ -151,7 +151,11 @@ export default function HomePage() {
           <div className="section-heading split-heading">
             <div>
               <p className="eyebrow">课程库</p>
-              <h2>从读懂 Java，到证明并发正确性。</h2>
+              <h2>
+                从读懂 Java，
+                <br />
+                到证明并发正确性。
+              </h2>
             </div>
             <p>
               目前已有 {publishedLessons.length} 节可学习内容，包含一个准备单元。
