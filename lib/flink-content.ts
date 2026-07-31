@@ -689,7 +689,7 @@ forEachTrace(recordThreadOwnerStateFailureTests());`,
         invariant:
           "健康必须包含最近可恢复点、可重放窗口、事务存活、处理进度与恢复时间；RUNNING 只说明当前状态机标签。",
         body: [
-          "checkpoint age 过大意味着 RPO 与可恢复点陈旧；若随后失败，需从更老 offset 重放。重放起点必须仍在 Kafka retention 内，恢复时长还必须小于剩余保留窗口。",
+          "checkpoint age 过大意味着可恢复点变旧、replay window 变长，并可能拉高 RTO 与 sink commit cadence；它不直接等于业务 RPO。对 Kafka 等 durable replay source，只要旧 offset 仍在 retention 内、checkpoint storage 可用且 sink 协议正确，这段数据会重放而不是丢失。业务数据损失要另从不可重放输入、retention 越界、checkpoint storage 丢失和协议外副作用推导。",
           "pending transaction 生命周期若短于 checkpoint + failover + commit，exactly-once sink 会在恢复时面对已过期事务。watermark lag 增长表示 event-time freshness 恶化，即使 processing throughput 仍看似正常。",
           "告警应监控安全 margin：retention remaining - worst recovery、transaction timeout - checkpoint/restart、state growth - storage quota，而非仅在 FAILED 后通知。"
         ]
@@ -904,7 +904,7 @@ assert:
       {
         kind: "orientation",
         eyebrow: "先写 SLO 与预算",
-        title: "吞吐、延迟、freshness、RPO 与 recovery 是五个不同目标",
+        title: "吞吐、延迟、freshness、replay/RTO 与业务 RPO 不是同一个目标",
         goal:
           "能够设计可重复 Flink benchmark，采集 subtask/JVM/native/backend/外部指标，分解 checkpoint 与 recovery，并给出带反证和回滚条件的优化结论。",
         prerequisites: [
@@ -933,7 +933,7 @@ assert:
         invariant:
           "一次优化只能在固定输入分布、payload、并行度、checkpoint/retention 与正确性 oracle 下比较；结论必须说明改善哪个 SLO、消耗哪个资源、在哪个阈值失效。",
         body: [
-          "吞吐是单位时间完成量；processing latency 是记录在算子中花费的时间；event-time latency/freshness 还受 source lag、watermark 和 late policy 影响。checkpoint RPO 与 restart recovery 则是故障维度，不能用平均 records/s 代替。",
+          "吞吐是单位时间完成量；processing latency 是记录在算子中花费的时间；event-time latency/freshness 还受 source lag、watermark 和 late policy 影响。checkpoint interval/age 主要改变 replay work、恢复 RTO 与 checkpoint 驱动 sink 的 commit cadence，不自动定义业务 RPO。对 durable replay source，恢复多重放一段并不等于丢失这段数据。",
           "先建立基线和容量曲线：逐级提升输入率，找出稳定区、排队区和崩溃区。每一级持续多个 checkpoint 周期并包含状态稳态；只跑几十秒会把 JIT、缓存预热和未增长状态误认为长期性能。",
           "所有调优都保留业务 oracle。吞吐提升若来自丢弃 late data、错误 filter pushdown、TTL 清理状态或 at-least-once 重复抵消，属于语义回归。"
         ]
@@ -943,12 +943,12 @@ assert:
         eyebrow: "先拆 checkpoint",
         title: "checkpoint duration 高，不等于 RocksDB snapshot 慢",
         prediction:
-          "作业 checkpoint end-to-end 120s，其中 start delay 80s、alignment 30s、async duration 8s。第一瓶颈最可能在哪？若 async duration 100s、alignment 1s，又应查什么？",
+          "作业 checkpoint end-to-end 120s，其中 start delay 80s、alignment 30s、async duration 8s。先确认它实际是 aligned 还是 unaligned；若 async duration 100s、alignment 1s，两条分支各应查什么？",
         invariant:
-          "checkpoint 时长必须拆为 barrier start delay、alignment、synchronous snapshot、asynchronous persistence 与 coordinator completion；不同 phase 不可用同一参数修复。",
+          "checkpoint 诊断必须先按每个 subtask 的 Unaligned Checkpoint 标志分支，再拆 barrier start delay、alignment、sync snapshot、async duration、in-flight bytes 与 coordinator completion；aligned/unaligned 的同名指标不能机械套用同一归因。",
         body: [
           "高 start delay/alignment 通常表明 barrier 被在途数据、backpressure 或慢 channel 拖住，应先定位下游容量、skew 与 buffer；直接增大 checkpoint timeout 只会更晚失败。",
-          "高 async duration 才更像 backend/storage throughput、状态字节、增量共享、上传并发或远端抖动。此时 unaligned 添加 channel state 可能进一步加重 I/O。",
+          "对 aligned checkpoint，高 async duration 通常优先检查 backend/storage throughput、状态字节、增量共享、上传并发或远端抖动。对 unaligned checkpoint，官方指标中的 Async Duration 还包含等待最后一个 barrier 到达以及持久化 in-flight channel data 的时间；因此必须同时看 alignment、processed/persisted in-flight bytes、channel-state size 与 storage 指标，不能仅凭 async 高就判定 RocksDB/object storage 是根因。",
           "checkpoint size 也要正确解释：增量 checkpoint 的共享文件、reported size 与本次实际新增/上传字节不是一个数。比较配置前必须确认指标定义和 ownership mode。"
         ]
       },
@@ -983,7 +983,7 @@ assert:
         expectedOutput: [
           "allocation 场景显示分配热点、GC/CPU 增长，不应先归咎网络",
           "hot key 显示 subtask 极端方差，即使总 CPU 尚有余量",
-          "checkpoint storage 限速主要拉高 async persistence，而非先拉高 alignment",
+          "aligned 对照中 checkpoint storage 限速主要拉高 async persistence；unaligned 对照还要拆出 last-barrier wait 与 persisted in-flight bytes",
           "外部 sink 限速从 sink 向上传播 backpressure，并伴随外部 latency/QPS 上限"
         ],
         observation:
@@ -1097,11 +1097,12 @@ assert:
         ],
         checkpoint: {
           prompt:
-            "checkpoint start delay 80s、async duration 8s 与 start delay 2s、async duration 100s 分别优先查哪里？为什么只增加 Xmx 可能让容器更不稳定？",
+            "checkpoint start delay 80s、async duration 8s 与 start delay 2s、async duration 100s 分别优先查哪里？为什么必须先看 Unaligned Checkpoint 标志？为什么只增加 Xmx 可能让容器更不稳定？",
           hint:
-            "前者看 barrier/backpressure，后者看 state/storage；process memory 守恒。",
+            "先区分 aligned/unaligned；UC 的 async 还含最后 barrier 与 in-flight 持久化；process memory 守恒。",
           answer: [
-            "高 start delay/alignment 先查下游反压、hot channel 和在途 buffer；高 async duration 先查状态字节、backend/disk/object storage。",
+            "高 start delay/alignment 先查下游反压、hot channel 和在途 buffer；aligned 下高 async 再优先查状态字节、backend/disk/object storage。",
+            "unaligned 下 Async Duration 还包括等待最后 barrier 与持久化 in-flight data；要联合 Unaligned 标志、processed/persisted in-flight bytes、channel state 和 storage 指标。",
             "timeout 只改变失败判定，不消除对应 phase 的瓶颈。",
             "固定容器 process memory 下，Xmx 增加会挤压 managed、network、metaspace/overhead 或 native 余量。",
             "RocksDB/direct/native 超限可能由容器直接 kill，不一定留下 Java heap OOM。"
@@ -1193,7 +1194,7 @@ assert:
         body: [
           "append-only source 可视为不断 INSERT 的动态表；GROUP BY 结果会更新已有 key，因此产生更新 changelog。Primary key 声明为 NOT ENFORCED，Flink 依赖 connector/数据真的满足唯一非空合同，并用它推导 upsert key。",
           "RowKind 是语义，不是调试标签。UPDATE_BEFORE 撤销旧行，UPDATE_AFTER 写入新行；upsert sink 可能只需 key + after/delete，append sink 则无法正确接受任意更新流。",
-          "Flink 2.3 增加 FROM_CHANGELOG/TO_CHANGELOG 等转换能力，但转换不是抹掉更新语义。把 update 包装成 append 事件后，下游必须显式按 op/version 物化，不能假装它们成为独立业务事实。"
+          "Flink 2.3 增加 FROM_CHANGELOG/TO_CHANGELOG，但该版本只覆盖有限的基础场景；PARTITION BY、invalid_op_handling、produces_full_deletes 等扩展仍属于后续版本边界。转换也不是抹掉更新语义：把 update 包装成 append 事件后，下游仍须按 op/version 物化，不能假装它们成为独立业务事实。"
         ]
       },
       {
@@ -1226,6 +1227,7 @@ assert:
   customer_id STRING,
   amount DECIMAL(18, 2),
   event_time TIMESTAMP(3),
+  proc_time AS PROCTIME(),
   WATERMARK FOR event_time AS event_time - INTERVAL '5' SECOND,
   PRIMARY KEY (order_id) NOT ENFORCED
 ) WITH (...);
@@ -1237,15 +1239,33 @@ GROUP BY customer_id;
 
 -- 第二轮：按 event_time 做 TUMBLE window；
 -- 第三轮：用 print/upsert-kafka/filesystem sink 比较可接受 changelog；
--- 记录真实 RowKind、upsert key、state estimate 与 physical JSON plan。`,
+-- 记录真实 RowKind、upsert key、state estimate 与 physical JSON plan。
+
+-- NDU 必须跑两轮，不能只在默认配置下等待 planner 报警：
+SET 'table.optimizer.non-deterministic-update.strategy' = 'IGNORE';
+EXPLAIN PLAN FOR
+SELECT o.order_id, NOW(), RAND(), d.segment
+FROM orders AS o
+LEFT JOIN customer_dim FOR SYSTEM_TIME AS OF o.proc_time AS d
+ON o.customer_id = d.customer_id;
+
+SET 'table.optimizer.non-deterministic-update.strategy' = 'TRY_RESOLVE';
+-- 对同一 lookup 更新计划再次 EXPLAIN；再分别保留 NOW()/RAND() 触发诊断。
+
+-- 版本边界对照：eligible source 才可能得到 delta join。
+SET 'table.optimizer.delta-join.strategy' = 'NONE';
+-- 与 2.3 默认策略生成 EXPLAIN diff；另验证 sink PK 不同且无 ON CONFLICT 时规划失败。`,
         expectedOutput: [
           "非窗口 GROUP BY 持续输出同一 customer 的更新 changelog",
           "事件时间窗口在 watermark 推进后输出，late policy 决定是否再更新",
           "EXPLAIN 显示 keyBy exchange、aggregate/state 与 sink changelog negotiation",
-          "append-only sink 对更新查询被拒绝或需要显式 changelog 编码，而不是静默当 INSERT"
+          "append-only sink 对更新查询被拒绝或需要显式 changelog 编码，而不是静默当 INSERT",
+          "默认 IGNORE 不诊断也不修复 NDU；这份无保护计划不能被解释为查询安全",
+          "TRY_RESOLVE 对需要保护的 lookup join 引入 materialization；对 NOW()/RAND() 等无法自动消除的非确定性给出详细错误",
+          "记录 materialization 新增 state bytes、checkpoint bytes 与 p99 latency，而不只比较 operator 名称"
         ],
         observation:
-          "保存 AST/validated/optimized/execution plan（能获取的层级）与实际 RowKind 序列。计划文本是当前版本/配置的证据，不是跨版本永久合同；升级必须重新生成 diff。",
+          "保存 IGNORE 与 TRY_RESOLVE 两轮的 AST/validated/optimized/execution plan（能获取的层级）、实际 RowKind、state/checkpoint bytes 与延迟。默认 IGNORE 没报错只说明 optimizer 未介入；计划文本是当前版本/配置的证据，不是跨版本永久合同。",
         trace: [
           {
             thread: "planner",
@@ -1271,6 +1291,8 @@ GROUP BY customer_id;
         body: [
           "stream-stream regular join 要保留两侧所有仍可能匹配的记录，若没有时间/业务清理条件，状态随输入增长。interval/window join 用时间范围和 watermark 提供清理上界；temporal join 按事实行的时间查询 versioned table；lookup join 通常在处理时读取外部当前值。",
           "Non-Deterministic Update（NDU）发生在更新 changelog 需要撤销旧行时，却无法重现当初生成旧行的非确定性列/lookup 值/key。NOW、RAND、processing-time lookup、不可重复 source back-read 和 TTL 清理都可能使同一输入重放得到不同 update。",
+          "table.optimizer.non-deterministic-update.strategy 在 2.3 默认是 IGNORE，即 optimizer 不做诊断或修复；TRY_RESOLVE 才会尝试为 evolving lookup 加 materialization，并对 NOW/RAND、非确定性 UDF 或 CDC metadata 等不能自动解决的因素报出详细错误。materialization 以更多 state、checkpoint I/O 和延迟换取可重演撤销。",
+          "2.3 默认会把满足条件的 regular join 尝试改写为 delta join，但前提是 source 提供可用于双向 lookup 的索引信息；当前主要是 Apache Fluss。它还有 join 类型、CDC/delete、key/filter 等限制，因此必须用 table.optimizer.delta-join.strategy=NONE 生成对照，不能把任意 regular join 都按无状态 lookup 理解。",
           "TTL 是控制无界 SQL state 的必要折中，但它按 processing time 删除匹配历史，会改变后续 join/aggregate 结果。它不是免费的资源参数；开启后必须把近似/非确定性写入业务合同。"
         ],
         trace: [
@@ -1324,7 +1346,8 @@ GROUP BY customer_id;
           }
         ],
         body: [
-          "EXPLAIN 要在生产数据分布、统计信息和配置下解释。相同 SQL 因版本、stats、changelog requirement、mini-batch 与 connector ability 得到不同 physical plan；优化目标必须包含状态、延迟与正确性，而不只是 operator 数。"
+          "EXPLAIN 要在生产数据分布、统计信息和配置下解释。相同 SQL 因版本、stats、changelog requirement、mini-batch 与 connector ability 得到不同 physical plan；优化目标必须包含状态、延迟与正确性，而不只是 operator 数。",
+          "Flink 2.3 中，query upsert key 与 sink primary key 不同且 INSERT 未写 ON CONFLICT 时默认规划失败。DO NOTHING、DO ERROR、DO DEDUPLICATE 代表不同冲突合同与状态成本，必须由业务明确选择；关闭 require-on-conflict 只恢复旧行为，不会消除非确定性。"
         ]
       },
       {
@@ -1332,12 +1355,15 @@ GROUP BY customer_id;
         eyebrow: "独立实现",
         title: "为订单宽表做关系语义审计",
         task:
-          "设计 orders、payments、customer_versions 三张表，分别实现 regular、interval、temporal 与 lookup join。为每个计划写 state/changelog/determinism 表，生成 EXPLAIN diff，并用同一 immutable input 两次重放验证结果。",
+          "设计 orders、payments、customer_versions 三张表，分别实现 regular、interval、temporal 与 lookup join。为每个计划写 state/changelog/determinism 表；对 NDU 的 IGNORE/TRY_RESOLVE、delta join 默认/NONE、ON CONFLICT 三种策略生成 EXPLAIN diff，并用同一 immutable input 两次重放验证结果。",
         constraints: [
           "每个 PRIMARY KEY 都说明数据源如何真实保证唯一非空",
           "记录实际 I/UB/UA/D 与 sink accepted ChangelogMode",
           "regular join 必须给 state 上界方案；TTL 必须写业务误差",
           "lookup 表在两次 replay 间改变，用来证明 processing-time 非确定性",
+          "NDU 同一 SQL 必须跑 IGNORE/TRY_RESOLVE 两轮，并量化 materialization 的 state/checkpoint/latency 成本",
+          "验证 FROM_CHANGELOG/TO_CHANGELOG 仅使用 2.3 已支持的基础能力，不借用后续版本语法",
+          "upsert key 与 sink PK 不同时分别验证无 ON CONFLICT 的规划失败及 DO NOTHING/ERROR/DEDUPLICATE",
           "实现一个仅 projection/filter pushdown 的 DynamicTableSource contract test"
         ],
         hints: [
@@ -1346,7 +1372,7 @@ GROUP BY customer_id;
           "connector applyFilters 应返回 accepted 与 remaining filters，不能全部宣称已处理。"
         ],
         adversarialTest:
-          "在 UPDATE_AFTER 中加入 NOW() 生成列，再让相同主键后续更新；检查 planner NDU 诊断或证明撤销为何不稳定。另让自定义 source 错误宣称接受一个未实现 filter，contract test 必须用被过滤掉/保留的边界行击穿数据丢失。"
+          "在 UPDATE_AFTER 中加入 NOW()/RAND()，并让 evolving lookup 在相同主键后续更新。先以 IGNORE 断言 planner 不诊断、不保护，再以 TRY_RESOLVE 断言 lookup materialization 出现且 NOW/RAND 被明确拒绝；若两轮输出相同或把默认无报警当安全则测试失败。另让自定义 source 虚报 filter ability，用边界行击穿数据丢失。"
       },
       {
         kind: "distributed-boundary",
@@ -1363,7 +1389,7 @@ GROUP BY customer_id;
         ],
         body: [
           "SQL 看似声明式，但 connector 是可信计算基。Planner 无法证明外部表真的满足 primary key、filter pushdown 真等价、lookup 可重读或 sink 正确应用 DELETE。",
-          "FROM_CHANGELOG/TO_CHANGELOG 可显式跨越表与操作事件，但 op column 只是把语义暴露出来。消费方仍要按 key、version 与 operation 建模。"
+          "FROM_CHANGELOG/TO_CHANGELOG 可显式跨越表与操作事件，但 op column 只是把语义暴露出来。消费方仍要按 key、version 与 operation 建模；2.3 的有限基础能力也不能按更新版本的完整 PTF 语法使用。"
         ]
       },
       {
@@ -1470,6 +1496,7 @@ GROUP BY customer_id;
         body: [
           "Flink 2.3 生产主线使用 org.apache.flink.api.connector.sink2.Sink，它是 @Public。旧 SinkFunction 与 Sink V1 已从 Flink 2.0 公共 API 移除，不应作为新 Connector 课程模板。",
           "基础 SinkWriter.write 接受记录，flush 把缓存向下游推进。需要恢复 writer 本地状态时实现 SupportsWriterState/StatefulSinkWriter；需要 exactly-once 提交时使用 SupportsCommitter。CommittingSinkWriter.prepareCommit() 公开签名没有 checkpointId：它产生 connector 自己定义的 committable，runtime 再为其关联 checkpoint/subtask lineage，最后由 Committer 提交。",
+          "提交生命周期必须按 runtime mode 区分：streaming checkpoint 路径调用 flush(false)，committable 随 checkpoint lineage 推进并在成功 checkpoint 后提交；bounded batch 或未启用 checkpoint 的 end-of-input 路径调用 flush(true)，runtime 可直接驱动剩余 committable 提交，但这本身不是 streaming failure 下的 exactly-once 证明。若 bounded source 运行在启用 checkpoint 的 STREAMING mode，end-of-input 不绕过协议，而是由 final checkpoint 收束后提交；“bounded”不自动等于 batch commit。",
           "API 结构不自动创造 exactly-once。外部系统必须提供事务、原子发布或可证明的幂等写；committable serializer、transaction timeout、consumer isolation 和 commit retry 都是合同的一部分。"
         ]
       },
@@ -1483,7 +1510,7 @@ GROUP BY customer_id;
           "flush 只表示 writer 缓冲被处理到约定层；它不等于事务 durable commit，也不等于 checkpoint globally completed，更不等于下游只观察一次。",
         body: [
           "auto-commit 写可能已对外可见，但 Flink 仍从旧 checkpoint replay 这 100 条，形成至少一次与重复。显式事务若未提交可被 abort，但需要事务句柄与 checkpoint 正确关联。幂等 upsert 允许重复物理写收敛到同一业务键版本。",
-          "prepareCommit/committable 也不是最终 commit。它表示事务或文件已达到可提交状态；只有 checkpoint completion 后的 committer 行为把它变为可见结果。",
+          "prepareCommit/committable 也不是最终 commit。它表示事务或文件已达到可提交状态；streaming 路径由成功 checkpoint（bounded streaming 最终由 final checkpoint）解锁提交，batch/no-checkpoint bounded 路径则由 end-of-input 生命周期驱动剩余提交。两条路径都不能把 flush 当作 external commit。",
           "commit 请求超时是未知结果：外部系统可能已 commit 但响应丢失。Committer 重试同一个稳定 identity 必须得到同一结果，而不是新建第二个事务。"
         ]
       },
@@ -1503,11 +1530,12 @@ GROUP BY customer_id;
     "after-flush-before-prepare",
     "after-committable-emitted",
     "after-external-commit-before-response",
-    "after-checkpoint-complete");
+    "after-checkpoint-complete",
+    "after-end-of-input-committable");
 
 forEachFailurePoint(point -> {
-    runAndFail(point);
-    restoreLatestCheckpoint();
+    runStreamingAndBoundedVariants(point);
+    restoreFromApplicableCheckpointOrRestartBatch();
     retryRecoveredCommittables();
     assertMaterializedLedgerEquals(batchOracle());
     assertOneCommittedVersionPerEventId();
@@ -1517,6 +1545,7 @@ forEachFailurePoint(point -> {
           "checkpoint 未完成的准备结果不可作为最终业务可见提交",
           "commit 响应丢失后重试同一 committable identity，结果仍只有一个",
           "旧 attempt 的事务被 abort/fence，不覆盖新 attempt",
+          "streaming 变体等待成功 checkpoint/final checkpoint；batch/no-checkpoint bounded 变体走 end-of-input commit",
           "恢复后 materialized ledger 与 immutable input oracle 一致"
         ],
         observation:
@@ -1524,7 +1553,7 @@ forEachFailurePoint(point -> {
         trace: [
           {
             thread: "SinkWriter task",
-            action: "write/batch/flush 并在 checkpoint 边界产生 committable",
+            action: "write/batch，并在 checkpoint 或 end-of-input 边界 flush/prepare",
             state: "记录尚未必对外最终可见"
           },
           {
@@ -1534,8 +1563,8 @@ forEachFailurePoint(point -> {
           },
           {
             thread: "Committer",
-            action: "checkpoint 完成后 commit/retry",
-            state: "稳定 identity 与幂等协议决定最终可见性"
+            action: "按 streaming checkpoint/final-checkpoint 或 bounded batch end-of-input commit/retry",
+            state: "runtime mode、稳定 identity 与幂等协议共同决定可见性"
           }
         ]
       },
@@ -1546,6 +1575,7 @@ forEachFailurePoint(point -> {
         body: [
           "connector 的 committable 至少应包含足以唯一识别外部准备结果的信息，例如 transactionId、writer identity/epoch、目标 partition 和校验信息。Serializer 必须能从旧 checkpoint/savepoint 读取，否则升级会丢失尚待提交的结果。checkpoint lineage 不必复制进 connector DTO。",
           "prepareCommit() 没有 checkpointId 参数。Flink 在 runtime 内部使用 CommittableWithLineage 等结构把 connector committable 与 checkpoint/subtask lineage 关联；这是运行时调度与恢复元数据，不是要求 connector 用“当前 checkpointId”生成外部事务 ID。",
+          "flush(false) 表示 checkpoint 边界，flush(true) 表示 end-of-input 边界。STREAMING mode 即使输入有界，也由 final checkpoint 保持 checkpoint 提交语义；BATCH/no-checkpoint 才可由 end-of-input 直接推进终态。connector 还必须测试最后一个 in-progress 资源是否真的转成可发布状态，不能从 API 回调名推断。",
           "Committer 必须把 already committed 视为成功收敛，把 retryable 与 fatal error 明确分类，并给未知结果查询路径。每次 retry 新建 transactionId 会把一次逻辑提交变成多次外部提交。",
           "rescaling 时 writer 数量和 subtask index 改变。不能只用 subtask index 生成永久 transaction id，也不能依赖公开 API 不提供的 checkpointId；应使用稳定的外部准备结果 identity，并让 writer epoch/外部 fencing 阻止旧 attempt 覆盖新 attempt。自定义 sink topology 中的聚合/全局提交也必须纳入 checkpoint 和 failover。"
         ],
@@ -1589,8 +1619,8 @@ forEachFailurePoint(point -> {
           {
             api: "SupportsCommitter + 外部事务",
             useWhen: "外部系统能 prepare/commit/abort，并可设置隔离与 fencing",
-            guarantees: "可把最终可见性绑定 checkpoint completion",
-            doesNotGuarantee: "事务 timeout、消费者 isolation 和 retry 自动正确"
+            guarantees: "streaming 可绑定成功 checkpoint；batch/no-checkpoint bounded 可由 end-of-input 驱动提交",
+            doesNotGuarantee: "bounded direct commit 自动具备 streaming exactly-once，或事务 timeout/isolation/retry 自动正确"
           },
           {
             api: "原子文件发布",
@@ -1612,7 +1642,8 @@ forEachFailurePoint(point -> {
           "不得假设 prepareCommit() 能取得 checkpointId；外部 identity 与 runtime lineage 分开建模",
           "commit 必须 idempotent，already committed 返回成功",
           "abort/cleanup 有超时和后台扫描，覆盖进程强杀未执行 close",
-          "测试覆盖 checkpoint abort、响应丢失、重试、rescale、升级和 read isolation"
+          "测试覆盖 checkpoint abort、响应丢失、重试、rescale、升级和 read isolation",
+          "分别测试 STREAMING checkpoint/final-checkpoint 与 BATCH/no-checkpoint end-of-input，不能只用 bounded source 推断模式"
         ],
         hints: [
           "先在数据库设计 commit_ledger 的唯一键和状态转移，再写 Java 接口。",
@@ -1620,14 +1651,14 @@ forEachFailurePoint(point -> {
           "对 committable serializer 保存 golden bytes，做 V1→V2 compatibility test。"
         ],
         adversarialTest:
-          "数据库完成 merge 并写 commit_ledger 后，在客户端收到响应前断开连接；恢复后同一 committable 再次提交，主表不得新增重复版本。再从并行度 2 调到 5，旧 writer 的 pending transactions 必须仍能由新拓扑提交或安全清理。"
+          "数据库完成 merge 并写 commit_ledger 后，在客户端收到响应前断开连接；恢复后同一 committable 再次提交，主表不得新增重复版本。再让同一 bounded input 分别运行 BATCH/no-checkpoint 与启用 checkpoint 的 STREAMING mode，断言前者由 end-of-input commit、后者等待 final checkpoint；最后做 2→5 rescale，旧 pending transactions 仍能提交或安全清理。"
       },
       {
         kind: "distributed-boundary",
         eyebrow: "外部系统边界",
         title: "Flink completion 只有外部系统接受同一协议才有意义",
         localGuarantee:
-          "sink2 runtime 可 checkpoint writer/committable state，并在 checkpoint 生命周期中驱动 Committer；失败可能重新交付待提交对象。",
+          "sink2 runtime 可保存 writer/committable state，并按 streaming checkpoint/final-checkpoint 或 bounded batch end-of-input 生命周期驱动 Committer；失败可能重新交付待提交对象。",
         breaksWith:
           "外部事务超时短于恢复窗口、commit 不幂等、消费者 read_uncommitted、旧 attempt 未 fencing、目标系统不支持原子提交、staging retention 过短。",
         alternatives: [
@@ -1656,7 +1687,7 @@ forEachFailurePoint(point -> {
             "Flink 可能在 commit 成功但确认状态未持久化、通知丢失或恢复后重新交付 committable。",
             "Committer 应查询/重试同一稳定 external identity，把 already committed 收敛为成功。",
             "subtaskIndex 在新 attempt 中复用，rescale 又会改变 writer 数量；仅靠它会让旧新事务碰撞或错误接管。",
-            "identity 需结合逻辑 owner、checkpoint/committable id 与 attempt/epoch fencing，并由外部唯一约束验证。"
+            "identity 需结合稳定 job namespace、持久 writer/external transaction identity 与 attempt/epoch fencing，并由外部唯一约束验证；不能假设无参 prepareCommit() 能取得 checkpointId。"
           ],
           successCriteria: [
             "能区分 writer state、committable 与 commit ledger",
@@ -1757,7 +1788,7 @@ forEachFailurePoint(point -> {
           "assignSplits 将责任从 enumerator pending 集合转移出去；运行时 assignment tracking、reader snapshotState 与 addSplitsBack 共同跨过失败窗口。enumerator 与 reader 不能在 checkpoint state 中把同一 split 同时声明为可分配 owner。",
         body: [
           "调用 assignSplits 后，enumerator 应从自己的 pending set 和 snapshot 中移除已分配 split，不能为了“保险”继续把它保存成待分配项。SourceCoordinator 会跟踪 assignment；SourceReader.snapshotState() 保存当前 assigned split 的可恢复状态与进度。两份职责是衔接关系，不是 enumerator/reader 双重持有。",
-          "reader/subtask 失败时，运行时根据 assignment 与恢复边界判断需重新交回的 split，并通过 addSplitsBack(...) 交给 enumerator 再分配；从 completed checkpoint 恢复时，reader checkpointed split state 提供已确认进度。连接器不能把控制事件发送成功误当成 offset 已 durable。",
+          "reader/subtask 从 completed checkpoint 恢复时，默认路径把 checkpointed reader split state 直接恢复给新 reader。SourceCoordinator 只把该 checkpoint 之后下发、尚未进入 reader checkpoint 的 assignment 通过 addSplitsBack(...) 交回 enumerator；若 connector 显式实现 SupportsSplitReassignmentOnRecovery，则 reader 会报告 restored splits，再由 enumerator 统一重分配。这三条路径不能混成“所有未完成 split 都 addSplitsBack”。",
           "受控重复读取是允许的：从较早 completed checkpoint 恢复会 replay。不可接受的是 split 永久丢失，或两个当前有效 readers 对同一非幂等外部游标并发推进并都宣称完成。",
           "dynamic discovery 还要保存“已经发现什么”的稳定证据。只在内存 Set 里去重文件名/partition，JobMaster failover 后会重新发现并可能重复分配。"
         ]
@@ -1815,7 +1846,8 @@ forEachFailurePoint(point -> {
         body: [
           "SourceReader.pollNext 运行在 source task 主线程，应尽快返回状态；Kafka/文件等阻塞 poll 通常放入 SplitReader/fetcher 线程，再通过有界 handover 交给 reader。发记录、更新运行时进度和 ReaderOutput 交互应留在受控主线程。",
           "cancel/close 必须能唤醒阻塞 fetch。只设置 volatile cancelled 而底层客户端永远阻塞，task 无法及时停止、failover 或释放连接。wakeup 还要区分正常关闭与真实读取异常，不能吞掉后者。",
-          "FLIP-27 Source 可在 split 粒度生成 watermark，并通过 pauseOrResumeSplits 支持 watermark alignment。若 connector 未实现暂停/恢复，不能声称 alignment 生效；source 之后 assignTimestampsAndWatermarks 也无法回头暂停 split。"
+          "FLIP-27 Source 可在 split 粒度生成 watermark，并通过 pauseOrResumeSplits 支持 watermark alignment。若 connector 未实现暂停/恢复，不能声称 alignment 生效；source 之后 assignTimestampsAndWatermarks 也无法回头暂停 split。",
+          "Flink 2.3 的 pipeline.watermark-alignment.buffer-size 默认是 3：允许 watermark 通过 ring buffer 平滑，实际暂停快 split 最多会晚约 3 个 update interval，短期内可能增加 window/temporal state。设为 0 会恢复 2.2 的即时比较行为；0/3 是延迟、backlog 吞吐与瞬时状态量的实验变量，不是越小越正确。"
         ],
         trace: [
           {
@@ -1879,7 +1911,8 @@ forEachFailurePoint(point -> {
           "split id 必须稳定且不依赖当前 subtask；offset 定义下一条待读位置",
           "fetcher handover 有界，pollNext 不做无限阻塞，wakeup 可终止客户端",
           "enumerator 与 split serializer 都有 round-trip、corruption、version compatibility 测试",
-          "每个 chaos case 检查 missing、replay range、owner、resource leak 和 watermark"
+          "每个 chaos case 检查 missing、replay range、owner、resource leak 和 watermark",
+          "watermark alignment 对比 buffer-size=0/3，记录 pause 延迟、drift、backlog throughput 与 window/temporal state"
         ],
         hints: [
           "先写 split ownership 状态机，再写 API 方法。",
@@ -1887,7 +1920,7 @@ forEachFailurePoint(point -> {
           "periodic discovery 要 checkpoint 已发现的稳定 identity，不能只记目录扫描时间。"
         ],
         adversarialTest:
-          "Enumerator 在发现新文件并开始 assignment 时失去 leadership；旧 reader 随后上报 split finished。恢复后断言新 enumerator 不丢文件、不接受旧 epoch 完成。另让 fetch 客户端永久阻塞，cancel 必须在限定时间内 wakeup 并释放线程。"
+          "Enumerator 在发现新文件并开始 assignment 时失去 leadership；旧 reader 随后上报 split finished。恢复后断言新 enumerator 不丢文件、不接受旧 epoch 完成。另让 fetch 客户端永久阻塞，cancel 必须在限定时间内 wakeup；最后用同一 backlog 比较 watermark alignment buffer-size=0/3，验证默认 3 会延后暂停而不改变业务 watermark 合同。"
       },
       {
         kind: "distributed-boundary",
@@ -1923,7 +1956,7 @@ forEachFailurePoint(point -> {
             "40 是最近 completed checkpoint 保存的下一待读位置；40–49 的运行时进度尚未进入 durable 一致切面。",
             "恢复必须回到 40 并受控 replay，sink/state 协议负责让最终结果收敛。",
             "split assignment event 只转移当前处理责任，不证明 reader 已读取、snapshot 或完成。",
-            "reader failure 后 runtime 通过 addSplitsBack 把未完成 split 交回 enumerator，并按新 attempt 重新分配。"
+            "completed checkpoint 中的 reader split state 默认直接恢复给新 reader；只有 checkpoint 之后尚未纳入快照的 assignment 才经 addSplitsBack 归还，SupportsSplitReassignmentOnRecovery 则是显式选择的统一重分配路径。"
           ],
           successCriteria: [
             "能证明 enumerator/reader/split state 的所有权",
@@ -2089,7 +2122,8 @@ rescale(fromParallelism(2), toParallelism(6))
         body: [
           "没有显式 uid 时，operator id 常由拓扑位置派生。插入一个 map、改变 chaining 或改写图都可能改变自动 id，使新作业无法匹配旧状态。所有可能含显式或内部状态的 operator 都应设置稳定且唯一的 uid。",
           "canonical savepoint 适合可移植升级；native savepoint 更接近 backend 原生格式，性能可能更好但可移植性较弱。升级前要锁定 uid、maxParallelism、state descriptor/serializer、connector compatibility、artifact 与绝对 state path。",
-          "从旧 savepoint 启动不回滚外部系统。若旧作业在 savepoint 之后继续提交过数据，新作业可能重发这段区间。stop-with-savepoint、sink 幂等/upsert、事务边界和 shadow verification 必须共同设计。"
+          "从旧 savepoint 启动不回滚外部系统。若旧作业在 savepoint 之后继续提交过数据，新作业可能重发这段区间。stop-with-savepoint、sink 幂等/upsert、事务边界和 shadow verification 必须共同设计。",
+          "flink stop --drain 不是“更安全的暂停”：它会在最终 savepoint barrier 前发出 MAX_WATERMARK，触发所有 event-time timers/window，并继续处理在途数据。官方只建议在永久终止时使用；若计划从 savepoint 恢复，不应 drain，因为 terminal watermark 已改变状态与输出，恢复可能产生错误结果。它也不等于读空无限外部 source，更不会触发 processing-time timer。"
         ],
         trace: [
           {
@@ -2135,10 +2169,16 @@ rescale(fromParallelism(2), toParallelism(6))
             doesNotGuarantee: "回滚外部 sink 已提交结果"
           },
           {
-            api: "stop-with-savepoint / drain policy",
-            useWhen: "需要把停止语义与最后状态边界显式协调",
-            guarantees: "按命令选项触发停止与 savepoint 流程",
-            doesNotGuarantee: "所有 connector 对 bounded end、watermark 与事务有相同语义"
+            api: "stop-with-savepoint（不加 --drain）",
+            useWhen: "计划稍后从该 savepoint 恢复、升级或迁移",
+            guarantees: "协调最终 savepoint 与停止，但不注入 terminal watermark",
+            doesNotGuarantee: "回滚 savepoint 之后已提交的外部结果"
+          },
+          {
+            api: "stop-with-savepoint --drain",
+            useWhen: "确认永久终止并希望 MAX_WATERMARK 触发全部 event-time timers/window",
+            guarantees: "在最终 barrier 前发出 MAX_WATERMARK，并处理由此产生的输出",
+            doesNotGuarantee: "savepoint 可安全恢复、无限 source 已读空或 processing-time timer 被触发"
           }
         ]
       },
@@ -2153,7 +2193,8 @@ rescale(fromParallelism(2), toParallelism(6))
           "V2 只允许 manifest 中声明的兼容变化；禁止临时 allowNonRestoredState",
           "ListState 元素必须可独立分配；UnionListState 必须证明复制成本和去重",
           "所有 coordinator↔task 事件包含 epoch/attempt，旧 attempt 不得提交",
-          "回滚必须说明 savepoint 之后外部数据如何去重、覆盖或隔离"
+          "回滚必须说明 savepoint 之后外部数据如何去重、覆盖或隔离",
+          "隔离比较 stop-with-savepoint 有/无 --drain 的 window/timer/output；可恢复升级路径禁止 --drain"
         ],
         hints: [
           "先导出 V1 作业图和 savepoint metadata，再审 V2，而不是先运行看看。",
@@ -2161,7 +2202,7 @@ rescale(fromParallelism(2), toParallelism(6))
           "shadow job 输出到隔离目标，用 immutable input range 与 oracle 比较。"
         ],
         adversarialTest:
-          "在 enumerator 分配 split 后、reader ACK 前切换 JobMaster leader；随后旧 reader 发回完成事件。断言新 epoch 不会重复丢失 split。再在 V2 中插入 stateless map 但保留所有 uid，restore 应成功；删除一个 uid 时发布门禁必须失败。"
+          "在 enumerator 分配 split 后、reader ACK 前切换 JobMaster leader；随后旧 reader 发回完成事件。断言新 epoch 不会重复丢失 split。再对含未触发 event-time timer 的窗口作业分别 stop 与 stop --drain：后者必须先产生 terminal firing，且标记为不可恢复终止输入；把 drained savepoint 当升级点时门禁必须失败。"
       },
       {
         kind: "distributed-boundary",
@@ -2319,15 +2360,22 @@ rescale(fromParallelism(2), toParallelism(6))
             .map(i -> i % 10 == 0 ? "normal-" + i : "hot")
             .keyBy(key -> key)
             .process(new FixedCpuCost(300_000));
+    case SLOW_REBALANCE_CHANNEL -> source
+            .rebalance()
+            .process(new OneSlowSubtask());
 }
 
 // 每轮固定输入速率、payload、parallelism 与运行时长；
+// SLOW_REBALANCE_CHANNEL 分别设置：
+// taskmanager.network.adaptive-partitioner.enabled=false/true
+// taskmanager.network.adaptive-partitioner.max-traverse-size=4
 // 保存每个 subtask 的三类时间、records/bytes、checkpoint 和外部指标。`,
         expectedOutput: [
           "CPU 慢：目标 operator 多数 subtask busy 高，CPU 利用率随之升高",
           "I/O 慢：sink/async 等待与外部 latency 对应，上游出现传播性 backpressure",
           "hot key：一个 subtask busy/records-in 极高，其余 subtask idle",
-          "三种场景均可能让 source 显示 backpressure，但修复完全不同"
+          "三种场景均可能让 source 显示 backpressure，但修复完全不同",
+          "adaptive partitioner 默认关闭；开启后 rebalance/rescale 可避开较忙 channel，但 keyed hot key 结果不变"
         ],
         observation:
           "每次只改变一个变量并保留原始 subtask 指标。平均吞吐相同不代表问题相同；诊断报告必须能用另一组指标证伪自己的首要假设。",
@@ -2356,7 +2404,8 @@ rescale(fromParallelism(2), toParallelism(6))
         body: [
           "network buffer pool 包括按 channel 的 exclusive buffer 与 input gate 可共享的 floating buffer。足够在途数据可覆盖网络往返并维持吞吐；过量在途数据则增加延迟和 checkpoint 成本。",
           "buffer debloating 根据消费吞吐与目标消费时间动态调整 buffer 数，常能缩短 barrier 穿越时间并减小 unaligned channel state。它控制队伍长度，不增加 CPU、外部 QPS 或 hot key 的消费能力。",
-          "AsyncDataStream 可以把阻塞 I/O 转为有界并发：capacity 限制 in-flight request，timeout 提供终止，ordered/unordered 决定输出顺序。但底层客户端线程池和连接池也必须有界，异步不是把压力藏进另一个无界队列。"
+          "AsyncDataStream 可以把阻塞 I/O 转为有界并发：capacity 限制 in-flight request，timeout 提供终止，ordered/unordered 决定输出顺序。但 ordered 模式会让一个慢 head request 阻塞所有后续已完成结果；watermark 也形成顺序边界。in-flight 输入会进入 operator checkpoint state，恢复后重新触发请求，所以外部写副作用仍可能执行多次，必须有业务幂等键或事务。",
+          "Flink 2.3 的 adaptive partition selection 默认关闭；启用 taskmanager.network.adaptive-partitioner.enabled=true 后，rescale/rebalance partitioner 可在最多 max-traverse-size（默认 4）个 channel 中选择较空闲者。它不适用于 keyBy 的确定 owner，不会拆 hot key，也不会增加外部系统容量。"
         ],
         trace: [
           {
@@ -2381,7 +2430,7 @@ rescale(fromParallelism(2), toParallelism(6))
       {
         kind: "api-decision",
         eyebrow: "按证据选择动作",
-        title: "扩容、重分区、异步化与 debloat 解决四种不同问题",
+        title: "扩容、重分区、自适应路由、异步化与 debloat 解决不同问题",
         apiOptions: [
           {
             api: "提高 operator parallelism",
@@ -2398,8 +2447,14 @@ rescale(fromParallelism(2), toParallelism(6))
           {
             api: "AsyncDataStream",
             useWhen: "瓶颈是有明确 timeout 的远程等待，外部系统允许有限并发",
-            guarantees: "task 不必同步阻塞每个请求",
-            doesNotGuarantee: "恰好一次副作用、自动取消远端或无限吞吐"
+            guarantees: "task 不必同步阻塞每个请求；in-flight 输入可随 checkpoint 恢复并重发",
+            doesNotGuarantee: "ordered 模式无队头阻塞、恰好一次外部副作用、自动取消远端或无限吞吐"
+          },
+          {
+            api: "adaptive partition selection（2.3 opt-in）",
+            useWhen: "rebalance/rescale 边上少数 downstream channel 暂时变慢",
+            guarantees: "在有限候选 channel 中负载感知选择，避免持续 round-robin 投给慢 channel",
+            doesNotGuarantee: "改变 keyed ownership、拆分 hot key 或扩容远端服务"
           },
           {
             api: "buffer debloat / unaligned",
@@ -2419,7 +2474,8 @@ rescale(fromParallelism(2), toParallelism(6))
           "保留 subtask 粒度与时间序列，禁止只输出 operator 平均值",
           "至少识别 CPU saturated、external I/O、hot key、网络 buffer 和 checkpoint storage 五类",
           "每个建议必须写预期指标变化；没有可证伪预测的建议不得输出",
-          "Async I/O 必须暴露 in-flight、timeout、retry、client queue 与 external QPS",
+          "Async I/O 必须暴露 in-flight、timeout、retry、client queue、ordered HOL 与 external QPS，并证明恢复重发的幂等边界",
+          "adaptive partitioner 只在 rebalance/rescale 对照中启用，记录 enabled/max-traverse-size，禁止用于解释 keyed hot key",
           "比较 debloat 前后吞吐、p99 latency、alignment、checkpoint bytes 和 recovery"
         ],
         hints: [
@@ -2428,7 +2484,7 @@ rescale(fromParallelism(2), toParallelism(6))
           "把 retry traffic 计入真实到达率，避免把自激过载误判为 source 增长。"
         ],
         adversarialTest:
-          "构造 99% 数据命中同一 key 的场景，把 parallelism 从 2 增到 16。报告若建议继续扩容而没有指出 max/median skew，测试失败；再让 AsyncFunction 的客户端内部使用无界 executor queue，证明 operator capacity 并未形成端到端上界。"
+          "构造 99% 数据命中同一 key，把 parallelism 从 2 增到 16；adaptive partitioner 与盲目扩容都不得声称能拆开该 key。再让 ordered AsyncFunction 的首个请求永久变慢，观察后续完成结果的 HOL；在远端写已成功、响应前失败，恢复重发必须靠幂等 key 收敛。最后用无界 client executor 证明 operator capacity 并未形成端到端上界。"
       },
       {
         kind: "distributed-boundary",
@@ -2626,7 +2682,9 @@ assertNoCommittedTransactionFromAbortedCheckpoint();`,
         body: [
           "unaligned checkpoint 在第一个 barrier 到达时立即推进 barrier，并把它超越的 input/output channel buffers 作为 channel state 持久化。恢复时先重放这些在途数据，再继续上游输入，从而保持一致切面。",
           "它适合 barrier 因持续 backpressure 长时间无法传播的场景，但代价是更大的 checkpoint、更多存储 I/O 和更长 channel-state recovery。若瓶颈本来就是 checkpoint storage 或 state backend I/O，unaligned 可能更差；它不会降低业务处理延迟或修复慢 sink。",
-          "Flink 2.3 中 unaligned 只适用于 EXACTLY_ONCE 且要求最大并发 checkpoint 为 1；savepoint 始终 aligned。state changelog 也不能简化成“实验功能”：它有明确能力与运维约束，例如最多一个并发 checkpoint、NO_CLAIM restore 不支持等，必须按 2.3 文档逐项验证。"
+          "Flink 2.3 中 unaligned 只适用于 EXACTLY_ONCE 且要求最大并发 checkpoint 为 1；savepoint 始终 aligned。state changelog 也不能简化成“实验功能”：它有明确能力与运维约束，例如最多一个并发 checkpoint、NO_CLAIM restore 不支持等，必须按 2.3 文档逐项验证。",
+          "2.3 新增恢复期间 checkpoint，但两项真实配置是 execution.checkpointing.unaligned.recover-output-on-downstream.enabled 与 execution.checkpointing.during-recovery.enabled（注意第二项没有第二个 unaligned）。二者默认 false、源码标为 Experimental，且 during-recovery 依赖 recover-output-on-downstream。它允许尚未消费完旧 UC channel state 时保存恢复进度；即使新 execution 已关闭 UC，也可能用于恢复旧 UC。",
+          "UC 还有四类语义边界：恢复时 in-flight data 与最新 watermark 的相对次序可不同，依赖“每条记录处理时当前 watermark”的算子要自己保存所需 watermark；barrier 不能中断正在处理的超大记录、单次海量 flatMap 输出或集中 timer；pointwise/forward channel 在 rescale 时没有 key-group 上下文可重分配；broadcast channel 又可能与只恢复一份的 broadcast state 重复应用。因此相关边会保持 aligned，不能宣称整张图都获得 UC。"
         ],
         trace: [
           {
@@ -2663,13 +2721,13 @@ assertNoCommittedTransactionFromAbortedCheckpoint();`,
             api: "unaligned EXACTLY_ONCE",
             useWhen: "高 alignment/start delay 由在途背压主导，storage I/O 尚有余量",
             guarantees: "把 channel state 纳入 snapshot，让 barrier 越过积压",
-            doesNotGuarantee: "修复慢算子；不支持并发 checkpoint > 1 或 AT_LEAST_ONCE"
+            doesNotGuarantee: "中断长记录、覆盖 pointwise/broadcast 边、保持隐含 watermark 行为或修复慢算子"
           },
           {
             api: "checkpoint interval / min pause / timeout",
-            useWhen: "按 RPO、正常完成时长和存储负载设定周期",
+            useWhen: "按可接受 checkpoint age、replay window、RTO、sink commit cadence 与存储负载设定周期",
             guarantees: "规定触发节奏与失败判定",
-            doesNotGuarantee: "source/sink 具备端到端 exactly-once"
+            doesNotGuarantee: "直接定义业务 RPO，或使 source/sink 自动具备端到端 exactly-once"
           },
           {
             api: "canonical savepoint",
@@ -2679,7 +2737,8 @@ assertNoCommittedTransactionFromAbortedCheckpoint();`,
           }
         ],
         body: [
-          "先分解 end-to-end duration：barrier start delay、alignment、synchronous snapshot、asynchronous persistence 与 completion。不同分量对应不同修复；单纯增大 timeout 只会让故障更晚暴露。"
+          "先分解 end-to-end duration：barrier start delay、alignment、synchronous snapshot、asynchronous persistence 与 completion。不同分量对应不同修复；单纯增大 timeout 只会让故障更晚暴露。",
+          "checkpoint interval 不是业务 RPO 的同义词。对 Kafka 等 durable replay source，较旧 checkpoint 主要增加 replay work、RTO 和事务/文件的 commit 延迟；只要 retention、state storage 与 sink 协议仍成立，重放区间不会因此丢失。业务 RPO 要从不可重放输入、retention 越界、snapshot 丢失和协议外副作用单独计算。"
         ]
       },
       {
@@ -2693,7 +2752,9 @@ assertNoCommittedTransactionFromAbortedCheckpoint();`,
           "checkpointId、source offset、attempt、transactional id 必须可观测",
           "只把 Kafka read_committed 结果用于 exactly-once 断言；stdout 只作诊断",
           "分别比较 aligned、buffer debloat、unaligned，记录 alignment/start delay/bytes/recovery",
-          "验证 unaligned 配置满足 EXACTLY_ONCE、max concurrent checkpoints=1；savepoint 仍按 aligned 处理"
+          "验证 unaligned 配置满足 EXACTLY_ONCE、max concurrent checkpoints=1；savepoint 仍按 aligned 处理",
+          "恢复期实验仅使用真实 key：unaligned.recover-output-on-downstream.enabled 与 during-recovery.enabled；两项默认关且按 Experimental 隔离",
+          "覆盖 watermark-sensitive operator、长记录/单次多输出、pointwise rescale 与 broadcast edge，记录哪些 edge 实际仍 aligned"
         ],
         hints: [
           "先用非事务 sink 故意观察重复，再开启事务，避免把正确结果当偶然。",
@@ -2701,7 +2762,7 @@ assertNoCommittedTransactionFromAbortedCheckpoint();`,
           "外部事务超时必须大于最坏 checkpoint + restart 时间，并通过测试验证。"
         ],
         adversarialTest:
-          "让 sink precommit 成功后丢失 checkpoint completion 通知并重启；committable 在恢复/重试中可能再次出现，最终 commit 必须幂等。再把 checkpoint storage 人为限速：若 unaligned 比 aligned 更慢，报告必须解释 I/O 瓶颈，而不是继续增大 channel state。"
+          "让 sink precommit 成功后丢失 checkpoint completion 通知并重启；committable 再次出现时 commit 必须幂等。随后从大 UC channel state 恢复，在尚未排空时再次杀进程：关闭/开启两项 Experimental recovery-checkpoint 配置，比较第二次恢复的重放量。再注入 watermark-sensitive operator、超大记录、pointwise rescale 与 broadcast state；任何把这些边界写成“UC 全图透明”等价的报告都失败。"
       },
       {
         kind: "distributed-boundary",
@@ -2712,7 +2773,7 @@ assertNoCommittedTransactionFromAbortedCheckpoint();`,
         breaksWith:
           "不可回放 source、checkpoint 协议外异步调用、非幂等 HTTP/数据库写、事务超时、下游 read_uncommitted、从旧 savepoint 回退后的既有外部结果。",
         alternatives: [
-          "事务 sink：checkpoint-scoped precommit + completion 后 commit",
+          "事务 sink：streaming 由 checkpoint completion 后 commit；batch/no-checkpoint bounded 另走 end-of-input lifecycle",
           "幂等 upsert：稳定业务 key/version，重复写收敛到同一结果",
           "outbox/去重表：把业务副作用与幂等证据放入同一外部事务"
         ],
@@ -2742,7 +2803,7 @@ assertNoCommittedTransactionFromAbortedCheckpoint();`,
           successCriteria: [
             "能手算双输入 aligned 一致切面",
             "能区分 snapshot、ACK、global completion、flush、precommit 与 commit",
-            "能准确陈述 2.3 unaligned/savepoint/state-changelog 约束",
+            "能准确陈述 2.3 UC 恢复期真实配置、watermark/长记录/pointwise/broadcast、savepoint 与 state-changelog 约束",
             "能给出 source—state—sink 的端到端 exactly-once 证明"
           ]
         }
@@ -2896,7 +2957,9 @@ events.keyBy(Event::customerId)
         body: [
           "Flink 保存的不只是业务值字节，还保存 serializer snapshot。恢复时，新 serializer 与旧 snapshot 协商兼容性：原样兼容、需要迁移、重新配置或不兼容。这个决策比 Java 类是否同名、serialVersionUID 是否相同更接近真实合同。",
           "Flink 生成的 POJO/Avro serializer 支持特定 schema evolution；key schema 演进不受支持，因为多个旧 key 可能合并为同一新 key，且 RocksDB 依赖二进制 key identity。Kryo 无法为状态 schema evolution 提供可靠兼容检查，不能把“本地反序列化没报错”当升级证明。",
-          "State TTL 使用 processing time。过期值逻辑上不可见，不等于对应字节立刻从 heap、RocksDB 或 checkpoint 物理删除；cleanup 依赖访问、增量清理或 compaction 等策略。TTL 不是精确业务 timer，也不能保证在某毫秒释放容量。"
+          "State TTL 只使用 processing time。StateTtlConfig 默认 UpdateType.OnCreateAndWrite，读不会刷新 TTL；只有显式 OnReadAndWrite 才会。默认 StateVisibility.NeverReturnExpired 让过期值在逻辑读取上立即等同不存在，但不等于 heap、RocksDB 或 checkpoint 中对应字节已物理删除。",
+          "物理 cleanup 是 best effort：读取可显式移除过期值，Heap 依赖增量扫描，RocksDB 依赖 compaction filter。TTL 还增加 timestamp 存储成本，不能保证某毫秒释放容量。TTL 配置本身不写入 checkpoint/savepoint，restore 后由当前 descriptor 决定语义。",
+          "Flink 2.3 对稳定 State V1 的 RocksDB/Heap 支持 savepoint 上 TTL off→on 与 on→off；旧 non-TTL 值先按未过期恢复，on→off 会忽略 TTL metadata，尚未物理清理的值可能重新可见。TTL 时长/update behavior 的改变仍需单独审计。ForSt 不在这项迁移保证内，反向开关 TTL 可能 StateMigrationException，不能套用 Heap/RocksDB 结论。"
         ],
         trace: [
           {
@@ -2943,13 +3006,14 @@ events.keyBy(Event::customerId)
           },
           {
             api: "State TTL",
-            useWhen: "允许按处理时间把长期未访问状态变为逻辑过期",
-            guarantees: "按 TTL 配置控制读取可见性",
+            useWhen: "允许按 processing time 从创建/写入（或显式配置后的读取）起计算逻辑过期",
+            guarantees: "显式 update type/visibility；默认 OnCreateAndWrite + NeverReturnExpired",
             doesNotGuarantee: "event-time 截止、精确删除时刻或立即回收磁盘"
           }
         ],
         body: [
-          "backend 选择要由状态规模、访问模式、checkpoint/recovery SLO 和本地磁盘条件驱动。不要把 Experimental ForSt 的远端异步方向当成 2.3 的生产默认，也不要假设切 backend 后性能必然更好。"
+          "backend 选择要由状态规模、访问模式、checkpoint/recovery SLO 和本地磁盘条件驱动。不要把 Experimental ForSt 的远端异步方向当成 2.3 的生产默认，也不要假设切 backend 后性能必然更好。",
+          "TTL 迁移矩阵必须写 backend：2.3 Heap/RocksDB 可在 otherwise-compatible savepoint 上开关 TTL，但不是对所有 TTL 参数调整的通行证；ForSt/State V2 不在该 on/off 保证中。"
         ]
       },
       {
@@ -2957,12 +3021,13 @@ events.keyBy(Event::customerId)
         eyebrow: "独立实现",
         title: "实现可升级的去重与规则状态",
         task:
-          "实现 CustomerRiskState：按 customerId 保存有界 eventId 去重索引、累计金额和规则版本；规则流使用 BroadcastState。为 V1/V2 定义明确 schema 演进，并提供从 V1 canonical savepoint 恢复到 V2、再 rescale 的自动化测试。",
+          "实现 CustomerRiskState：按 customerId 保存有界 eventId 去重索引、累计金额和规则版本；规则流使用 BroadcastState。显式配置去重 TTL 的 update type、visibility 与 cleanup；为 V1/V2 定义 schema 演进，并提供 savepoint restore、TTL off/on、backend 对照与 rescale 测试。",
         constraints: [
           "所有 operator 显式稳定 uid；maxParallelism 在 V1 固定并写入升级清单",
           "禁止把 key 类型作为本次升级对象；禁止 Kryo fallback",
           "BroadcastState 更新必须由 ruleVersion 确定，不能依赖本地到达顺序",
-          "TTL 只能清理允许过期的去重索引，不得决定财务业务截止",
+          "TTL 只能清理允许过期的去重索引，不得决定财务业务截止；禁止依赖读取隐式刷新默认 OnCreateAndWrite",
+          "Heap/RocksDB 分别验证 TTL off→on/on→off；ForSt 明确排除在迁移成功保证之外",
           "测试必须检查业务 oracle、state size、restore 与 rescale，而不只检查 RUNNING"
         ],
         hints: [
@@ -2971,7 +3036,7 @@ events.keyBy(Event::customerId)
           "为过期数据另设指标；逻辑不可见与磁盘回收分别观察。"
         ],
         adversarialTest:
-          "让两个并行实例以不同顺序收到 ruleVersion 9 和 10，断言最终都选择版本 10；随后从 V1 savepoint 恢复 V2，并故意把 key schema 或 maxParallelism 改掉，测试必须拒绝发布，而不是添加 allowNonRestoredState 继续跑。"
+          "让两个并行实例以不同顺序收到 ruleVersion 9/10，断言最终都选 10。随后在 Heap/RocksDB 上从 non-TTL savepoint 开启 TTL，断言旧值先按未过期恢复；再关闭 TTL，检查尚未物理清理值可能重新可见。相同断言不得推广到 ForSt。最后故意改变 key schema/maxParallelism，发布门禁必须拒绝。"
       },
       {
         kind: "distributed-boundary",
@@ -3006,7 +3071,8 @@ events.keyBy(Event::customerId)
           answer: [
             "parallelism 只重新分配既有 key-group range；maxParallelism 定义 key-group 空间，是状态布局的一部分。",
             "改变 key serializer/selector 会改变 key 的二进制 identity 或 hash 映射，可能把旧状态送到错误归属；key schema evolution 不受支持。",
-            "TTL 按 processing time 让过期值逻辑不可见，但物理 cleanup 可能延后到访问、增量扫描或 compaction。",
+            "TTL 默认 OnCreateAndWrite/NeverReturnExpired：读不刷新；过期值逻辑不可见，但物理 cleanup 可能延后到访问、Heap 增量扫描或 RocksDB compaction。",
+            "2.3 Heap/RocksDB 可对 otherwise-compatible savepoint 开关 TTL，ForSt 不在保证内；TTL 参数调整仍需单独 restore 测试。",
             "因此 restore 测试必须检查真实旧字节、业务结果与物理状态趋势。"
           ],
           successCriteria: [
@@ -3033,6 +3099,11 @@ events.keyBy(Event::customerId)
         "State Backends",
         "docs/dev/datastream/fault-tolerance/state_backends/",
         "HashMap、EmbeddedRocksDB、checkpoint storage 与 backend 选择。"
+      ),
+      flinkDoc(
+        "State TTL Migration Compatibility",
+        "docs/dev/datastream/fault-tolerance/state_migration/",
+        "Heap/RocksDB TTL off/on savepoint 迁移、非追溯语义与 ForSt 边界。"
       ),
       flinkDoc(
         "Working with State V2",

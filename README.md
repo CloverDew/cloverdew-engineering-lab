@@ -112,6 +112,8 @@ open-next.config.ts          OpenNext 配置
 wrangler.jsonc               workerd 运行时与静态资源配置
 ```
 
+完整的深度学习契约、实验路线和通过门槛见 [Flink 精通工程课程](./FLINK_MASTERY_PLAN.md)。
+
 ## 新增或更新课程
 
 Java 课程位于 `lib/content.ts`，Flink 课程位于 `lib/flink-content.ts`，由
