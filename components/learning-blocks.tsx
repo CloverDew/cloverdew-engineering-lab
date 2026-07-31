@@ -4,14 +4,14 @@ import type { LessonLearningBlock } from "@/lib/content";
 type TextContent = string | readonly string[];
 
 const learningBlockLabels = {
-  orientation: "定位图",
-  misconception: "反例",
+  orientation: "先看全貌",
+  misconception: "修正直觉",
   experiment: "实验",
-  mechanism: "机制",
-  "api-decision": "API 选型",
-  implementation: "动手实现",
-  "distributed-boundary": "分布式边界",
-  checkpoint: "检查点"
+  mechanism: "讲清原理",
+  "api-decision": "怎么选",
+  implementation: "动手写",
+  "distributed-boundary": "跨进程边界",
+  checkpoint: "自测"
 } as const;
 
 const codeKindLabels: Record<string, string> = {
@@ -291,7 +291,7 @@ function Checkpoint({
 
   return (
     <div className="checkpoint-card">
-      <strong>检查点：先作答，再核对</strong>
+      <strong>先自己答，再回来核对</strong>
       <p>{checkpoint.prompt}</p>
       <p className="learning-block-label">通过标准</p>
       <BulletList items={checkpoint.successCriteria} />
@@ -325,10 +325,12 @@ function Checkpoint({
 
 function LearningBlock({
   block,
+  codeFirst,
   index,
   total
 }: {
   block: LessonLearningBlock;
+  codeFirst: boolean;
   index: number;
   total: number;
 }) {
@@ -407,7 +409,7 @@ function LearningBlock({
 
       {block.goal && (
         <div className="learning-goal">
-          <strong>完成这一步后，你应该能回答</strong>
+          <strong>学完这一步，你应该能够</strong>
           <p>{block.goal}</p>
         </div>
       )}
@@ -428,9 +430,11 @@ function LearningBlock({
         </div>
       )}
 
-      {!requiresInquiryFlow && explanatoryContent}
+      {!requiresInquiryFlow &&
+        (!codeFirst || !block.code) &&
+        explanatoryContent}
 
-      {block.code && (
+      {block.code && (block.kind !== "implementation" || !codeFirst) && (
         <CodeBlock
           code={block.code}
           codeKind={getCodeKindLabel(block.codeKind)}
@@ -438,11 +442,13 @@ function LearningBlock({
         />
       )}
 
-      {block.runCommand && (
+      {block.runCommand &&
+        (block.kind !== "implementation" || !codeFirst) && (
         <CodeBlock code={block.runCommand} label="运行命令" />
       )}
 
-      {block.expectedOutput && (
+      {block.expectedOutput &&
+        (block.kind !== "implementation" || !codeFirst) && (
         <div className="experiment-output">
           <strong>预期现象或输出</strong>
           <pre>
@@ -465,13 +471,25 @@ function LearningBlock({
         </div>
       )}
 
-      <ExecutionTrace trace={block.trace} />
-      <ApiOptions options={block.apiOptions} />
+      {codeFirst &&
+        block.code &&
+        block.kind !== "implementation" &&
+        !requiresInquiryFlow && (
+          <div className="learning-explanation">
+            <p className="learning-block-label">读完代码，再看解释</p>
+            {explanatoryContent}
+          </div>
+        )}
 
-      {block.kind !== "implementation" && practiceCard}
-
-      <DistributedBoundary block={block} />
-      <Checkpoint checkpoint={block.checkpoint} />
+      {block.kind !== "implementation" && (
+        <>
+          <ExecutionTrace trace={block.trace} />
+          <ApiOptions options={block.apiOptions} />
+          {practiceCard}
+          <DistributedBoundary block={block} />
+          <Checkpoint checkpoint={block.checkpoint} />
+        </>
+      )}
 
       {block.hints?.length && (
         <details className="question-card learning-details">
@@ -483,6 +501,48 @@ function LearningBlock({
             <BulletList items={block.hints} />
           </div>
         </details>
+      )}
+
+      {codeFirst && block.kind === "implementation" && block.code && (
+        <details className="question-card learning-details">
+          <summary>
+            <span>对照完整实现</span>
+          </summary>
+          <div className="question-answer">
+            <CodeBlock
+              code={block.code}
+              codeKind={getCodeKindLabel(block.codeKind)}
+              label={getCodeLabel(block)}
+            />
+            {block.runCommand && (
+              <CodeBlock code={block.runCommand} label="运行命令" />
+            )}
+            {block.expectedOutput && (
+              <div className="experiment-output">
+                <strong>预期现象或输出</strong>
+                <pre>
+                  <code>{block.expectedOutput.join("\n")}</code>
+                </pre>
+              </div>
+            )}
+          </div>
+        </details>
+      )}
+
+      {codeFirst && block.kind === "implementation" && block.code && (
+        <div className="learning-explanation">
+          <p className="learning-block-label">对照代码，检查你的推理</p>
+          {explanatoryContent}
+        </div>
+      )}
+
+      {block.kind === "implementation" && (
+        <>
+          <ExecutionTrace trace={block.trace} />
+          <ApiOptions options={block.apiOptions} />
+          <DistributedBoundary block={block} />
+          <Checkpoint checkpoint={block.checkpoint} />
+        </>
       )}
 
       {block.solution && (
@@ -501,15 +561,18 @@ function LearningBlock({
 }
 
 export function LearningBlocks({
-  blocks
+  blocks,
+  codeFirst = false
 }: {
   blocks: readonly LessonLearningBlock[];
+  codeFirst?: boolean;
 }) {
   return (
     <div className="learning-flow">
       {blocks.map((block, index) => (
         <LearningBlock
           block={block}
+          codeFirst={codeFirst}
           index={index}
           key={`${block.kind}-${block.title}`}
           total={blocks.length}

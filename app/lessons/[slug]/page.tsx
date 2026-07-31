@@ -97,7 +97,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 ))}
                 <a href="#explain-back">
                   <span>{String(learningBlocks.length + 1).padStart(2, "0")}</span>
-                  复述并解释
+                  讲给别人听
                 </a>
               </>
             ) : (
@@ -119,7 +119,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
         <div className="article-content">
           <div className="key-idea">
-            <span>记住这个核心观点</span>
+            <span>先记住这一句</span>
             <p>{lesson.keyIdea}</p>
           </div>
 
@@ -153,13 +153,43 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
           {hasLearningBlocks ? (
             <>
-              <LearningBlocks blocks={learningBlocks} />
+              <LearningBlocks
+                blocks={learningBlocks}
+                codeFirst={lesson.week >= 2}
+              />
+              {lesson.references?.length ? (
+                <section
+                  aria-labelledby="official-references-title"
+                  className="lesson-references"
+                  id="official-references"
+                >
+                  <p className="eyebrow">继续查证</p>
+                  <h2 id="official-references-title">本课依据的官方资料</h2>
+                  <p className="lesson-references-intro">
+                    正文按问题重新组织，并非逐段翻译。需要确认精确语义时，请回到下面这些一手资料。
+                  </p>
+                  <ul>
+                    {lesson.references.map((reference) => (
+                      <li key={reference.href}>
+                        <a
+                          href={reference.href}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          {reference.title}
+                        </a>
+                        <p>{reference.note}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ) : null}
               <section className="explain-back learning-retrieval" id="explain-back">
-                <p className="eyebrow">结束前的检索练习</p>
-                <h2>合上正文，用自己的话复述。</h2>
+                <p className="eyebrow">最后做一次回忆</p>
+                <h2>合上正文，试着讲给别人听。</h2>
                 <p className="explain-back-intro">
-                  不要翻回上文，也不要先看 AI 的解释。先指出这一课要保护的
-                  状态、它为什么会失败，以及你会用什么证据证明修复有效。
+                  先别翻回上文，也先别问 AI。试着说清：这节课解决了什么
+                  问题、关键规则是什么，以及你会用什么例子证明它。
                 </p>
                 {retrievalPrompts.length > 0 ? (
                   <ol className="question-list learning-retrieval-list">
@@ -316,8 +346,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
           <div className="article-completion">
             <div>
-              <strong>阅读不是终点。</strong>
-              <p>只有完成实验和复述解释后，才标记为完成。</p>
+              <strong>看完还不算学会。</strong>
+              <p>做完实验，并能脱离正文讲清楚，再标记为完成。</p>
             </div>
             <ProgressButton slug={lesson.slug} />
           </div>

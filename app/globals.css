@@ -1905,6 +1905,52 @@ a.lesson-card:hover {
   margin-top: 0;
 }
 
+.lesson-references {
+  border-top: 1px solid var(--line);
+  margin-top: 8px;
+  padding: 56px 0;
+}
+
+.lesson-references h2 {
+  margin-bottom: 12px;
+}
+
+.lesson-references-intro {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.75;
+  max-width: 720px;
+}
+
+.lesson-references ul {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+}
+
+.lesson-references li {
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 17px 18px;
+}
+
+.lesson-references a {
+  color: var(--blue);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.lesson-references li p {
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.65;
+  margin: 7px 0 0;
+}
+
 .learning-retrieval-list > li > p {
   color: var(--ink-soft);
   font-size: 14px;
@@ -1922,6 +1968,10 @@ a.lesson-card:hover {
 }
 
 @media (max-width: 620px) {
+  .lesson-references ul {
+    grid-template-columns: 1fr;
+  }
+
   .runtime-comparison {
     grid-template-columns: 1fr;
   }
