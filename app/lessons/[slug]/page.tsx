@@ -9,6 +9,10 @@ import {
   getLearningBlockNavigationLabel,
   LearningBlocks
 } from "@/components/learning-blocks";
+import {
+  type LessonNavigationItem,
+  LessonStepNavigation
+} from "@/components/lesson-step-navigation";
 import { ProgressButton } from "@/components/progress-button";
 import { getLesson, publishedLessons } from "@/lib/content";
 
@@ -58,6 +62,33 @@ export default async function LessonPage({ params }: LessonPageProps) {
       ? "准备单元"
       : `第 ${lesson.week.toString().padStart(2, "0")} 周`;
   const subjectLabel = lesson.week === 0 ? "Java 阅读基础" : "Java 并发";
+  const navigationItems: LessonNavigationItem[] = hasLearningBlocks
+    ? [
+        ...learningBlocks.map((block, blockIndex) => ({
+          id: getLearningBlockId(blockIndex),
+          index: blockIndex + 1,
+          label: getLearningBlockNavigationLabel(block),
+          shortLabel: getLearningBlockKindLabel(block.kind)
+        })),
+        {
+          id: "explain-back",
+          index: learningBlocks.length + 1,
+          label: "讲给别人听",
+          shortLabel: "复述"
+        }
+      ]
+    : [
+        ...lesson.sections.map((section, sectionIndex) => ({
+          id: `section-${sectionIndex + 1}`,
+          index: sectionIndex + 1,
+          label: section.title
+        })),
+        {
+          id: "explain-back",
+          index: lesson.sections.length + 1,
+          label: "复述并解释"
+        }
+      ];
 
   return (
     <article>
@@ -82,39 +113,12 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
       <div className="shell article-layout">
         <aside className="article-aside">
-          <div className="toc">
-            <p>{hasLearningBlocks ? "本课步骤" : "本课内容"}</p>
-            {hasLearningBlocks ? (
-              <>
-                {learningBlocks.map((block, blockIndex) => (
-                  <a
-                    href={`#${getLearningBlockId(blockIndex)}`}
-                    key={`${block.kind}-${block.title}`}
-                  >
-                    <span>{String(blockIndex + 1).padStart(2, "0")}</span>
-                    {getLearningBlockNavigationLabel(block)}
-                  </a>
-                ))}
-                <a href="#explain-back">
-                  <span>{String(learningBlocks.length + 1).padStart(2, "0")}</span>
-                  讲给别人听
-                </a>
-              </>
-            ) : (
-              <>
-                {lesson.sections.map((section, sectionIndex) => (
-                  <a href={`#section-${sectionIndex + 1}`} key={section.title}>
-                    <span>{String(sectionIndex + 1).padStart(2, "0")}</span>
-                    {section.title}
-                  </a>
-                ))}
-                <a href="#explain-back">
-                  <span>{String(lesson.sections.length + 1).padStart(2, "0")}</span>
-                  复述并解释
-                </a>
-              </>
-            )}
-          </div>
+          <LessonStepNavigation
+            ariaLabel={hasLearningBlocks ? "本课步骤" : "本课内容"}
+            items={navigationItems}
+            title={hasLearningBlocks ? "本课步骤" : "本课内容"}
+            variant="desktop"
+          />
         </aside>
 
         <div className="article-content">
@@ -124,31 +128,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
           </div>
 
           {hasLearningBlocks && (
-            <nav
-              aria-label="本课学习步骤（移动端）"
-              className="learning-step-nav learning-step-nav-mobile"
-              data-mobile-step-nav
-            >
-              {learningBlocks.map((block, blockIndex) => (
-                <a
-                  aria-label={`第 ${blockIndex + 1} 步：${getLearningBlockNavigationLabel(block)}`}
-                  className="learning-step-link"
-                  href={`#${getLearningBlockId(blockIndex)}`}
-                  key={`${block.kind}-${block.title}`}
-                >
-                  <span className="learning-step-index">
-                    {String(blockIndex + 1).padStart(2, "0")}
-                  </span>
-                  <span>{getLearningBlockKindLabel(block.kind)}</span>
-                </a>
-              ))}
-              <a className="learning-step-link" href="#explain-back">
-                <span className="learning-step-index">
-                  {String(learningBlocks.length + 1).padStart(2, "0")}
-                </span>
-                <span>复述</span>
-              </a>
-            </nav>
+            <LessonStepNavigation
+              ariaLabel="本课学习步骤（移动端）"
+              items={navigationItems}
+              variant="mobile"
+            />
           )}
 
           {hasLearningBlocks ? (
