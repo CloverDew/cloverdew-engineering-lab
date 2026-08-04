@@ -182,7 +182,7 @@ export default function HomePage() {
             </div>
             <p>
               目前共有 {publishedLessons.length} 节已发布内容，分属 Java
-              并发主线与 Flink 精通轨道。可按轨道、状态或概念筛选。
+              并发主线与 Flink 精通轨道。两条进度互不等待，可按轨道、学习进度或概念筛选。
             </p>
           </div>
           <LessonFilter lessons={lessonSummaries} />

@@ -45,6 +45,41 @@ export function CheckIcon({ size = 18, className }: IconProps) {
   );
 }
 
+export function LockIcon({ size = 18, className }: IconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      height={size}
+      viewBox="0 0 24 24"
+      width={size}
+    >
+      <rect
+        height="10"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        width="14"
+        x="5"
+        y="10"
+      />
+      <path
+        d="M8.5 10V7.5a3.5 3.5 0 0 1 7 0V10"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M12 14v2"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 export function MoonIcon({ size = 18, className }: IconProps) {
   return (
     <svg

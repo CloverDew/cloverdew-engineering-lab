@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useCourseProgress } from "@/components/course-progress-provider";
 import { LessonCard } from "@/components/lesson-card";
 import {
   getLessonTrack,
@@ -9,18 +10,41 @@ import {
   type LessonTrack
 } from "@/lib/curriculum-meta";
 
+type ProgressFilter = "all" | "completed" | "current" | "locked";
+
+const trackOrder = ["java-concurrency", "flink-mastery"] as const;
+
+const trackDetails = {
+  "java-concurrency": {
+    className: "java",
+    title: "Java 并发主线",
+    description: "按顺序完成课程，逐步解锁下一节。"
+  },
+  "flink-mastery": {
+    className: "flink",
+    title: "Flink 精通轨道",
+    description: "独立推进，不受 Java 学习进度影响。"
+  }
+} as const satisfies Record<
+  LessonTrack,
+  { className: string; title: string; description: string }
+>;
+
 export function LessonFilter({
   lessons
 }: {
   lessons: readonly LessonSummary[];
 }) {
+  const { ready, getLessonState, getTrackProgress } = useCourseProgress();
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "published" | "upcoming">("all");
+  const [progressFilter, setProgressFilter] =
+    useState<ProgressFilter>("all");
   const [track, setTrack] = useState<"all" | LessonTrack>("all");
-  const filterLabels = {
-    all: "全部状态",
-    published: "已发布",
-    upcoming: "即将推出"
+  const progressFilterLabels = {
+    all: "全部进度",
+    completed: "已完成",
+    current: "可学习",
+    locked: "未解锁"
   };
   const trackLabels = {
     all: "全部轨道",
@@ -30,8 +54,12 @@ export function LessonFilter({
 
   const visible = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-    return lessons.filter((lesson) => {
-      const matchesStatus = filter === "all" || lesson.status === filter;
+    return lessons.flatMap((lesson) => {
+      const progressState = getLessonState(lesson.slug);
+      const matchesProgress =
+        progressFilter === "all" ||
+        progressState === progressFilter ||
+        (progressFilter === "locked" && progressState === "upcoming");
       const matchesTrack =
         track === "all" || getLessonTrack(lesson) === track;
       const haystack = [
@@ -43,13 +71,27 @@ export function LessonFilter({
       ]
         .join(" ")
         .toLowerCase();
-      return (
-        matchesStatus &&
+      const matchesSearch =
+        !normalized || haystack.includes(normalized);
+
+      return matchesProgress &&
         matchesTrack &&
-        (!normalized || haystack.includes(normalized))
-      );
+        matchesSearch
+        ? [{ lesson, progressState }]
+        : [];
     });
-  }, [filter, lessons, query, track]);
+  }, [getLessonState, lessons, progressFilter, query, track]);
+
+  const groups = trackOrder
+    .map((groupTrack) => ({
+      details: trackDetails[groupTrack],
+      lessons: visible.filter(
+        ({ lesson }) => getLessonTrack(lesson) === groupTrack
+      ),
+      progress: getTrackProgress(groupTrack),
+      track: groupTrack
+    }))
+    .filter((group) => group.lessons.length > 0);
 
   return (
     <>
@@ -72,6 +114,7 @@ export function LessonFilter({
             {(["all", "java-concurrency", "flink-mastery"] as const).map(
               (item) => (
                 <button
+                  aria-pressed={track === item}
                   className={track === item ? "active" : ""}
                   key={item}
                   onClick={() => setTrack(item)}
@@ -82,27 +125,84 @@ export function LessonFilter({
               )
             )}
           </div>
-          <div aria-label="课程状态" className="filter-group" role="group">
-            {(["all", "published", "upcoming"] as const).map((item) => (
+          <div aria-label="学习进度" className="filter-group" role="group">
+            {(["all", "completed", "current", "locked"] as const).map((item) => (
               <button
-                className={filter === item ? "active" : ""}
+                aria-pressed={progressFilter === item}
+                className={progressFilter === item ? "active" : ""}
                 key={item}
-                onClick={() => setFilter(item)}
+                onClick={() => setProgressFilter(item)}
                 type="button"
               >
-                {filterLabels[item]}
+                {progressFilterLabels[item]}
               </button>
             ))}
           </div>
         </div>
       </div>
-      <div className="lesson-grid">
-        {visible.map((lesson) => (
-          <LessonCard key={lesson.slug} lesson={lesson} />
-        ))}
+      <div
+        aria-busy={!ready}
+        className={`lesson-track-list ${
+          ready ? "is-progress-ready" : "is-progress-loading"
+        }`}
+      >
+        {groups.map((group, groupIndex) => {
+          const progressPercent = group.progress.total
+            ? (group.progress.completed / group.progress.total) * 100
+            : 0;
+          const headingId = `${group.track}-lessons-title`;
+
+          return (
+            <section
+              aria-labelledby={headingId}
+              className={`lesson-track-group lesson-track-group--${
+                group.details.className
+              } ${groups.length > 1 && groupIndex > 0 ? "has-divider" : ""}`}
+              data-track={group.track}
+              key={group.track}
+            >
+              <header className="lesson-track-header">
+                <div className="lesson-track-heading">
+                  <p className="eyebrow">独立学习轨道</p>
+                  <h3 id={headingId}>{group.details.title}</h3>
+                  <p>{group.details.description}</p>
+                </div>
+                <div className="lesson-track-summary">
+                  <span>
+                    已完成 {group.progress.completed} / {group.progress.total}
+                  </span>
+                  <div
+                    aria-label={`${group.details.title}学习进度`}
+                    aria-valuemax={group.progress.total}
+                    aria-valuemin={0}
+                    aria-valuenow={group.progress.completed}
+                    className="lesson-track-progress"
+                    role="progressbar"
+                  >
+                    <span className="lesson-track-progress-bar">
+                      <span
+                        className="lesson-track-progress-fill"
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </span>
+                  </div>
+                </div>
+              </header>
+              <div className="lesson-grid">
+                {group.lessons.map(({ lesson, progressState }) => (
+                  <LessonCard
+                    key={lesson.slug}
+                    lesson={lesson}
+                    progressState={progressState}
+                  />
+                ))}
+              </div>
+            </section>
+          );
+        })}
       </div>
       {visible.length === 0 && (
-        <p className="empty-state">暂时没有符合该搜索条件的课程。</p>
+        <p className="empty-state">暂时没有符合当前筛选的课程。</p>
       )}
     </>
   );

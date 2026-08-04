@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FlinkModuleList } from "@/components/flink-module-list";
 import { ArrowIcon, CheckIcon } from "@/components/icons";
 import { flinkLessons, flinkModules } from "@/lib/flink-content";
 
@@ -31,8 +32,8 @@ const masteryGates = [
 export default function FlinkPage() {
   const firstLesson =
     flinkLessons.find((lesson) => lesson.week === 1) ?? flinkLessons[0];
-  const lessonBySlug = new Map(
-    flinkLessons.map((lesson) => [lesson.slug, lesson])
+  const readTimeBySlug = Object.fromEntries(
+    flinkLessons.map((lesson) => [lesson.slug, lesson.readTime])
   );
 
   return (
@@ -116,40 +117,10 @@ export default function FlinkPage() {
             </p>
           </div>
 
-          <ol className="flink-module-grid">
-            {flinkModules.map((module, index) => {
-              const lesson = lessonBySlug.get(module.lessonSlug);
-
-              return (
-                <li key={module.id}>
-                  <Link
-                    className="flink-module-card"
-                    href={`/lessons/${module.lessonSlug}`}
-                  >
-                    <div className="flink-module-index">
-                      <span>{module.id}</span>
-                      <small>{lesson?.readTime ?? "深度模块"}</small>
-                    </div>
-                    <h3>{module.title}</h3>
-                    <p>{module.question}</p>
-                    <ul aria-label={`${module.title} 主题`}>
-                      {module.topics.map((topic) => (
-                        <li key={topic}>{topic}</li>
-                      ))}
-                    </ul>
-                    <div className="flink-module-outcome">
-                      <span>掌握结果</span>
-                      <p>{module.outcome}</p>
-                    </div>
-                    <strong>
-                      进入模块 {String(index + 1).padStart(2, "0")}{" "}
-                      <ArrowIcon />
-                    </strong>
-                  </Link>
-                </li>
-              );
-            })}
-          </ol>
+          <FlinkModuleList
+            modules={flinkModules}
+            readTimeBySlug={readTimeBySlug}
+          />
         </div>
       </section>
 

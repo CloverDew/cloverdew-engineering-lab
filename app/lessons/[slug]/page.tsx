@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowIcon } from "@/components/icons";
 import { CopyCode } from "@/components/copy-code";
+import { CourseLessonNavigation } from "@/components/course-lesson-navigation";
 import {
   getLearningBlockId,
   getLearningBlockKindLabel,
   getLearningBlockNavigationLabel,
   LearningBlocks
 } from "@/components/learning-blocks";
+import { LessonAccessGate } from "@/components/lesson-access-gate";
 import {
   type LessonNavigationItem,
   LessonStepNavigation
@@ -102,7 +102,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
       ];
 
   return (
-    <article>
+    <LessonAccessGate slug={lesson.slug} trackHref={trackHref}>
+      <article>
       <header className="article-hero">
         <div className="shell article-shell">
           <div className="article-meta">
@@ -347,33 +348,15 @@ export default async function LessonPage({ params }: LessonPageProps) {
             <ProgressButton slug={lesson.slug} />
           </div>
 
-          <nav aria-label="课程导航" className="article-nav">
-            {previous ? (
-              <Link href={`/lessons/${previous.slug}`}>
-                <span>上一课</span>
-                <strong>← {previous.title}</strong>
-              </Link>
-            ) : (
-              <span />
-            )}
-            {next ? (
-              <Link href={`/lessons/${next.slug}`}>
-                <span>下一课</span>
-                <strong>
-                  {next.title} <ArrowIcon />
-                </strong>
-              </Link>
-            ) : (
-              <Link href={trackHref}>
-                <span>继续学习</span>
-                <strong>
-                  查看{trackLabel} <ArrowIcon />
-                </strong>
-              </Link>
-            )}
-          </nav>
+          <CourseLessonNavigation
+            next={next}
+            previous={previous}
+            trackHref={trackHref}
+            trackLabel={trackLabel}
+          />
         </div>
       </div>
-    </article>
+      </article>
+    </LessonAccessGate>
   );
 }
